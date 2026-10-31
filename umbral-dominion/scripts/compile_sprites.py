@@ -146,6 +146,7 @@ def load_keypose_sources():
                 raise ValueError(f'{atlas_name}: expected 1774x887, got {atlas.size}')
             cells={}
             pixel_hashes=[]
+            silhouettes=[]
             for col,kind in enumerate(KEYPOSE_ACTIONS):
                 w,h=atlas.size
                 cell=atlas.crop((col*w//4,row*h//2,(col+1)*w//4,(row+1)*h//2))
@@ -153,6 +154,14 @@ def load_keypose_sources():
                 box=alpha.getbbox()
                 if not box or max(alpha.getextrema())<230 or alpha.getbbox()[2]-alpha.getbbox()[0]<100:
                     raise ValueError(f'{key}/{kind}: invalid or blank artwork')
+                # Distinct PNG hashes alone are insufficient: recoloring one
+                # still changes RGB bytes without creating a new pose.
+                # Compare normalized opaque silhouettes to reject such submissions.
+                outline=alpha.crop(box)
+                outline=ImageOps.contain(outline,(64,64),Image.Resampling.LANCZOS)
+                normalized=Image.new('L',(64,64))
+                normalized.paste(outline,((64-outline.width)//2,64-outline.height))
+                silhouettes.append({i for i,p in enumerate(normalized.tobytes()) if p>96})
                 frame=fit(cell,CANVAS,margin=8)
                 # Image bytes are compared rather than PNG metadata so a duplicate
                 # static frame cannot masquerade as a different action drawing.
@@ -161,6 +170,14 @@ def load_keypose_sources():
                     raise ValueError(f'{key}: duplicate key-pose artwork {kind}')
                 pixel_hashes.append(sig)
                 cells[kind]=frame
+            for index in range(len(silhouettes)):
+                for other in range(index+1,len(silhouettes)):
+                    union=len(silhouettes[index]|silhouettes[other])
+                    difference=1-len(silhouettes[index]&silhouettes[other])/max(1,union)
+                    if difference<0.08:
+                        raise ValueError(
+                            f'{key}: pose cells {index}/{other} have nearly identical '
+                            'silhouettes; recoloring a still is not an action pose')
             result[key]={'poses':cells,'sourceFile':atlas_name,
                          'keyPoseChecksums':dict(zip(KEYPOSE_ACTIONS,pixel_hashes)),
                          'origin':'AI_GENERATED_DISTINCT_KEYPOSE_ILLUSTRATIONS',
