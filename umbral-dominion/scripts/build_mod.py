@@ -204,6 +204,23 @@ def build(schema_dir, output, require_art=False):
     heroes_raw = load(DESIGNS / "heroes.json")
     faction_design = load(DESIGNS / "faction-design.json")
     validate_design(creatures_raw, heroes_raw, faction_design)
+    town_design = load(DESIGNS / "ebonspire-town.json")
+    town = town_design["town"]
+    if len(town["creatures"]) != 7:
+        raise ValueError("Ebonspire must define seven creature tiers")
+    for tier, pair in enumerate(town["creatures"], start=1):
+        if len(pair) != 2 or any(c not in creatures_raw for c in pair):
+            raise ValueError(f"Unknown or invalid Ebonspire creature tier {tier}")
+        if any(creatures_raw[c]["tier"] != tier for c in pair):
+            raise ValueError(f"Ebonspire tier mismatch: {tier}")
+        for building in ("dwellingLvl" + str(tier), "dwellingUpLvl" + str(tier)):
+            if building not in town["buildings"] or building not in town["structures"]:
+                raise ValueError(f"Missing Ebonspire town dwelling: {building}")
+    for row in town["hallSlots"]:
+        for slot in row:
+            for building in slot:
+                if building not in town["buildings"]:
+                    raise ValueError(f"Missing Ebonspire hall building: {building}")
     creatures, creature_assets = make_creatures(creatures_raw)
     heroes, hero_assets = make_heroes(heroes_raw)
     classes, class_assets = make_hero_classes()
@@ -214,6 +231,9 @@ def build(schema_dir, output, require_art=False):
         "alignment": "evil",
         "nativeTerrain": "subterranean",
         "creatureBackground": {"120px": "TPCASNEC", "130px": "CRBKGNEC"},
+        "town": town,
+        "puzzleMap": town_design["puzzleMap"],
+        "preferUndergroundPlacement": True,
     }}
     manifest = {
         "name": "Umbral Dominion (development draft)",
@@ -243,7 +263,9 @@ def build(schema_dir, output, require_art=False):
     write(config / "heroes.json", heroes)
     write(config / "heroClasses.json", classes)
     write(config / "faction.json", faction)
-    assets = creature_assets + hero_assets + class_assets
+    town_assets = [{"owner": "Ebonspire", "type": "town graphics", "filename": name}
+                   for name in town_design["requiredAssets"]]
+    assets = creature_assets + hero_assets + class_assets + town_assets
     supplied_dir = ROOT / "assets"
     for a in assets:
         source = supplied_dir / a["filename"]
@@ -259,9 +281,12 @@ def build(schema_dir, output, require_art=False):
         "validatedEntities": validated,
         "tierCount": 7,
         "missingArtCount": len(missing),
-        "townImplemented": False,
+        "townImplemented": True,
+        "townRuntimeTested": False,
+        "townBuildingCount": len(town["buildings"]),
+        "townDwellingCount": sum(k.startswith("dwelling") for k in town["buildings"]),
         "playable": False,
-        "notes": ["Ebonspire town definition and building UI remain unimplemented.",
+        "notes": ["Ebonspire JSON configuration is generated; UI graphics and runtime verification remain incomplete.",
                   "Hero specialties and hero-class map objects are provisional.",
                   "Schema validation DOES NOT mean VCMI runtime compatibility.",
                   "Never redistribute Heroes III assets as part of this package."]
@@ -275,6 +300,8 @@ def build(schema_dir, output, require_art=False):
         "| Two hero class JSON objects | PASS |",
         "| VCMI JSON schema validation | PASS |",
         f"| Missing artwork files | {len(missing)} |",
+        f"| Ebonspire town structures/buildings | {len(town['buildings'])} configured |",
+        "| Ebonspire dwelling buildings | 14 configured |",
         "| Playable Ebonspire town | NOT YET |",
         "| Ready to install | NO |",
         "", "This is a DEVELOPMENT BUILD. Do not install it as a completed faction."
