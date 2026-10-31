@@ -82,6 +82,7 @@ jobs:
             umbral-dominion/build/TOWN_LAYOUT_DIAGNOSTIC.png
             umbral-dominion/build/TOWN_LAYOUT_BEFORE_AFTER.png
             umbral-dominion/build/town-art-report.json
+            umbral-dominion/build/ARTWORK_BACKLOG.json
             umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
             umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn

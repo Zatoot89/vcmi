@@ -18,10 +18,13 @@ def check(path):
     town=json.loads((folder/'town-art-report.json').read_text(encoding='utf-8'))
     validation=json.loads((folder/'validation.json').read_text(encoding='utf-8'))
     assert pose['creatureCount']==14
-    assert pose['illustratedKeyPoseCreatureCount']==4
-    assert pose['illustratedKeyPoseCount']==16
-    assert pose['derivedPoseCreatureCount']==10
-    assert pose['derivedPoseCount']==40
+    assert 4 <= pose['illustratedKeyPoseCreatureCount'] <= 14
+    assert pose['illustratedKeyPoseCount']==4*pose['illustratedKeyPoseCreatureCount']
+    assert pose['derivedPoseCreatureCount']==14-pose['illustratedKeyPoseCreatureCount']
+    assert pose['derivedPoseCount']==4*pose['derivedPoseCreatureCount']
+    backlog=json.loads((folder/'ARTWORK_BACKLOG.json').read_text(encoding='utf-8'))
+    assert backlog['missingCreatureCount']==pose['derivedPoseCreatureCount']
+    assert backlog['missingIllustratedPoses']==pose['derivedPoseCount']
     assert pose['overallAuthoredAnimationFrames']==0
     assert not pose['releaseApproved']
     assert town['townStructures']==36
@@ -34,8 +37,8 @@ def check(path):
     assert town['coordinateCorrectionsFile']=='design/town-layout-corrections.json'
     assert town['overlapReviewCount']>=0
     assert validation['artReadiness']['status']=='BLOCKED'
-    assert validation['artReadiness']['genuineKeyPoseSourceUnits']==4
-    assert validation['artReadiness']['derivedFromSingleStillUnits']==10
+    assert validation['artReadiness']['genuineKeyPoseSourceUnits']==pose['illustratedKeyPoseCreatureCount']
+    assert validation['artReadiness']['derivedFromSingleStillUnits']==pose['derivedPoseCreatureCount']
     assert validation['artReadiness']['fullIndependentlyIllustratedBuildings']==0
     assert validation['windowsQA']=='NOT_TESTED' # isolated zip install is not gameplay
     units={v['id']:v for v in pose['creatures']}
@@ -43,7 +46,7 @@ def check(path):
     assert sum(u['derivedKeyPoseCount'] for u in units.values())==40
     for name in CREATURES:
         unit=units[name]
-        if name in {'gloomHound','dreadHound','veilArcher','nightstalker'}:
+        if unit['illustratedKeyPoseCount'] == 4:
             assert unit['illustratedKeyPoseCount']==4 and unit['derivedKeyPoseCount']==0
             assert unit['illustrationOrigin']=='AI_GENERATED_DISTINCT_KEYPOSE_ILLUSTRATIONS'
         else:
@@ -62,7 +65,8 @@ def check(path):
                 filename=f"UD_TOWN_{item['building'].upper()}_FRAME{frame}.png"
                 assert root+filename in filelist,filename
         assert all(root+('UD_'+n.upper()+'.json') in filelist for n in CREATURES)
-    print('PASS prototype coverage: 14 creatures, 16 AI-illustrated source poses + 40 single-still-derived studies')
+    print(f"PASS prototype coverage: 14 creatures, {pose['illustratedKeyPoseCount']} AI-illustrated poses and {pose['derivedPoseCount']} derivative studies")
+    print(f"ARTWORK TODO: {backlog['missingCreatureCount']} creatures require source atlases")
     print('PASS town asset audit: 36 illustrative derivatives from ONLY 8 independently painted building sources')
     print('PASS honesty gates: art/release blocked, placement and VCMI gameplay explicitly unverified')
     print('PASS town placement bounds: 15 corrected coordinates; 0 out-of-canvas objects in static preview')

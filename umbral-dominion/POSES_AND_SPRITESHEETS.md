@@ -59,3 +59,21 @@ The Windows CI smoke test is **not** a gameplay or launch test. Full acceptance 
 The v0.4 town structure configuration had **15 overlays with x/y coordinates beyond the 800×374 preview canvas** (155×112 preview sprites). The original coordinates and exact before/after delta for each are saved in `design/town-layout-corrections.json`. This milestone conservatively clamps only those 15 x/y positions inside the preview image; other 21 positions and all z values are unchanged.
 
 This resolves *static* canvas clipping but **does not solve artistic overlapping, clickable masks, depth order or the real VCMI renderer**. The new `TOWN_LAYOUT_BEFORE_AFTER.png` and `town-art-report.json` contain the evidence; the report lists potential bounding-box occlusions for review. The CI gate fails if any town overlay remains outside canvas bounds.
+
+## v0.5 art ingestion and automatic coverage accounting
+
+Ten remaining creature pairs can now be upgraded simply by adding a **transparent 1774×887 2-row × 4-column atlas** under `assets-source/keypose-atlases/`. Use these exact filenames:
+
+| Source atlas | Top row | Bottom row |
+|---|---|---|
+| `ashling-cinderimp.webp` | Ashling | Cinder Imp |
+| `grave-doom-sentinels.webp` | Grave Sentinel | Doom Sentinel |
+| `hexbinder-soulweaver.webp` | Hexbinder | Soul Weaver |
+| `dusk-abyssal-reavers.webp` | Dusk Reaver | Abyssal Reaver |
+| `umbral-eclipse-dragons.webp` | Umbral Dragon | Eclipse Dragon |
+
+For each row use columns **idle, move, attack (or cast), hit**. Draw distinct character poses, consistent right-facing perspective, transparent canvas, centered figure and preserved anatomy and silhouette. Use independent original/lawfully licensed art; do not substitute recolored still frames.
+
+When a valid atlas is committed, the same workflow **automatically** replaces the single-still derived group frames, checks all four poses for uniqueness, updates `KEYPOSE_APPROVAL_SHEET.png`, shrinks `ARTWORK_BACKLOG.json`, and updates the creature source-quality counters. No Python edits are required for each asset.
+
+These 4 poses per unit are **key-pose studies, not full finished combat animation**. Death, turn, attacks, gameplay bounds and all rendered transitions still require review.

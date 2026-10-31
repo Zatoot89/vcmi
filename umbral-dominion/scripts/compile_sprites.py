@@ -37,6 +37,51 @@ KEYPOSE_MASTER={
  'veilArcher':('archers.webp',0), 'nightstalker':('archers.webp',1),
 }
 KEYPOSE_ACTIONS=('idle','move','attack','hit')
+# Optional 2x4 original illustrated action atlases: missing art stays reported,
+# NEVER silently substituted as additional illustrated source frames.
+OPTIONAL_KEYPOSE_MASTER={
+  "ashling": [
+    "ashling-cinderimp.webp",
+    0
+  ],
+  "cinderImp": [
+    "ashling-cinderimp.webp",
+    1
+  ],
+  "graveSentinel": [
+    "grave-doom-sentinels.webp",
+    0
+  ],
+  "doomSentinel": [
+    "grave-doom-sentinels.webp",
+    1
+  ],
+  "hexbinder": [
+    "hexbinder-soulweaver.webp",
+    0
+  ],
+  "soulWeaver": [
+    "hexbinder-soulweaver.webp",
+    1
+  ],
+  "duskReaver": [
+    "dusk-abyssal-reavers.webp",
+    0
+  ],
+  "abyssalReaver": [
+    "dusk-abyssal-reavers.webp",
+    1
+  ],
+  "umbralDragon": [
+    "umbral-eclipse-dragons.webp",
+    0
+  ],
+  "eclipseDragon": [
+    "umbral-eclipse-dragons.webp",
+    1
+  ]
+}
+
 
 
 def crop_alpha(image):
@@ -88,10 +133,13 @@ def load_keypose_sources():
     """
     from PIL import ImageStat
     result={}
-    for key,(atlas_name,row) in KEYPOSE_MASTER.items():
+    candidates={**KEYPOSE_MASTER,**OPTIONAL_KEYPOSE_MASTER}
+    for key,(atlas_name,row) in candidates.items():
         path=SRC/'keypose-atlases'/atlas_name
         if not path.is_file():
-            raise FileNotFoundError(f'Missing key-pose artwork for {key}: {path}')
+            if key in KEYPOSE_MASTER:
+                raise FileNotFoundError(f'Missing baseline key-pose artwork for {key}: {path}')
+            continue
         with Image.open(path) as source:
             atlas=source.convert('RGBA')
             if atlas.size!=(1774,887):
@@ -120,15 +168,15 @@ def load_keypose_sources():
     return result
 
 
-def generate_derived_pose_studies(dest, build):
+def generate_derived_pose_studies(dest, build, available_sources):
     """Four distinct COMPUTED poses per remaining creature, not illustrated poses.
 
     These 40 frames all derive from ten pre-existing painted single stills.
     CI MUST NOT interpret them as illustrated or hand-authored frames.
     """
     results={}
-    names=[key for key in ALL_CREATURES if key not in KEYPOSE_MASTER]
-    review=Image.new('RGB',(920,90+len(names)*165),(22,17,36))
+    names=[key for key in ALL_CREATURES if key not in available_sources]
+    review=Image.new('RGB',(920,max(120,90+len(names)*165)),(22,17,36))
     d=ImageDraw.Draw(review)
     d.text((12,13),'DERIVED ACTION STUDIES: 10 UNITS / ONE SOURCE STILL EACH',fill=(234,212,250))
     d.text((12,34),'NOT DISTINCT ILLUSTRATIONS | NOT ACCEPTABLE AS PRODUCTION ANIMATION',fill=(231,142,151))
@@ -401,7 +449,7 @@ def generate_void_arrow_projectile(dest):
 
 def source_keypose_preview(sources, output):
     """Visible gate for checking actual source character poses before release."""
-    image=Image.new('RGB',(880,810),(23,15,36))
+    image=Image.new('RGB',(880,max(810,75+len(sources)*182)),(23,15,36))
     d=ImageDraw.Draw(image)
     d.text((18,10),'UMBRAL DOMINION — DISTINCT ILLUSTRATED SOURCE POSES',fill=(235,205,252))
     d.text((18,30),'4 units × 4 AI-generated key poses • generated in-between motion is NOT authored',fill=(199,166,225))
@@ -409,7 +457,7 @@ def source_keypose_preview(sources, output):
     d.text((370,53),'MOVE',fill=(228,194,255))
     d.text((557,53),'ATTACK / SHOOT',fill=(228,194,255))
     d.text((775,53),'HIT',fill=(228,194,255))
-    for row,key in enumerate(NEW_CREATURES):
+    for row,key in enumerate(sorted(sources)):
         d.text((7,row*185+139),key,fill=(217,181,240))
         for col,action in enumerate(KEYPOSE_ACTIONS):
             pose=sources[key]['poses'][action]
@@ -425,7 +473,7 @@ def generate_pose_sheets(generated_dir, build_dir):
     built=[];sheets=[]
     illustrated_sources=load_keypose_sources()
     source_keypose_preview(illustrated_sources,build/"KEYPOSE_APPROVAL_SHEET.png")
-    derived_sources=generate_derived_pose_studies(dest,build)
+    derived_sources=generate_derived_pose_studies(dest,build,illustrated_sources)
     keypose_sources={**derived_sources,**illustrated_sources}
     for idx,key in enumerate(ALL_CREATURES):
         prefix='UD_'+key.upper()
@@ -490,6 +538,23 @@ def generate_pose_sheets(generated_dir, build_dir):
                        'Animation groups technically present; actual in-game transitions unverified.',
                        '8 painted building image overlays provisional: town-screen alignment unverified.',
                        'The ten other creatures now have derived pose studies, but original action-specific paintings are still missing.']}
+    # Human-review work queue: never count procedurally transformed stills as new art.
+    queue=[]
+    for name in ALL_CREATURES:
+        if name not in illustrated_sources:
+            fname,row=OPTIONAL_KEYPOSE_MASTER[name]
+            queue.append({'creature':name,'expectedAtlas':fname,'row':row,
+                          'requiredKeyPoses':list(KEYPOSE_ACTIONS),
+                          'status':'MISSING_ILLUSTRATED_SOURCE_POSES',
+                          'currentSource':'ONE_PAINTED_STILL_PLUS_DERIVED_MOTION',
+                          'notReadyForRelease':True})
+    (build/'ARTWORK_BACKLOG.json').write_text(json.dumps({
+      'version':'0.5.0-alpha','missingCreatureCount':len(queue),
+      'missingIllustratedPoses':len(queue)*4,'requiredAtlasShape':[1774,887],
+      'transparentBackground':True,'pending':queue,
+      'manualApprovalRequired':True,'vcmiRuntimeVerified':False,
+      'automaticallyGeneratedFramesDoNotQualifyAsPaintedArt':True
+    },indent=2)+'\n',encoding='utf-8')
     (build/'sprite-pose-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     return report
 

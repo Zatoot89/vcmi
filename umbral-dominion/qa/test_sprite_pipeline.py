@@ -20,8 +20,12 @@ def check(build_dir):
     assert report['spriteSheetCount']==14
     assert report['paintedBuildingOverlays']==8
     assert report['releaseApproved'] is False
-    assert report['illustratedKeyPoseCreatureCount']==4
-    assert report['illustratedKeyPoseCount']==16
+    assert 4 <= report['illustratedKeyPoseCreatureCount'] <= 14
+    assert report['illustratedKeyPoseCount']==4*report['illustratedKeyPoseCreatureCount']
+    assert report['derivedPoseCreatureCount'] + report['illustratedKeyPoseCreatureCount'] == 14
+    backlog=json.loads((path/'ARTWORK_BACKLOG.json').read_text())
+    assert backlog['missingCreatureCount']==report['derivedPoseCreatureCount']
+    assert backlog['missingIllustratedPoses']==report['derivedPoseCount']
     assert report['keyPoseMethod'].startswith('AI_ILLUSTRATED_')
     assert report['rangedMissile']['directions']==5
     for key in ('gloomHound','dreadHound','veilArcher','nightstalker'):
@@ -35,7 +39,7 @@ def check(build_dir):
         assert item['uniqueFrameHashes']>=20, item['id']
         assert item['frames']>=75, item['id']
     with Image.open(path/'KEYPOSE_APPROVAL_SHEET.png') as im:
-        assert im.size==(880,810)
+        assert im.width==880 and im.height>=810
     with Image.open(path/'SPRITE_ACTION_PREVIEW.png') as im:
         assert im.size==(1120,1805)
     archive=path/'umbral-dominion-dev-DRAFT.zip'
@@ -78,7 +82,8 @@ def check(build_dir):
         assert 'Mods/umbralDominion/Content/Music/UD_EBON_SPIRE.ogg' in names
     print('PASS: 14 structured sprite sheets, 14 VCMI JSON animation descriptors, 8 illustrated structures')
     print('PASS: required action groups, non-identical frames, alpha spritesheet format, archive assets')
-    print('PASS: 16 distinct illustrated key poses assigned to 4 units; source hash/animation traceability')
+    print(f"PASS: {report['illustratedKeyPoseCount']} distinct illustrated source poses across {report['illustratedKeyPoseCreatureCount']} units")
+    print(f"ART BACKLOG: {backlog['missingCreatureCount']} units / {backlog['missingIllustratedPoses']} source poses needed")
     print('NOT PASSED: full authored animation, art approval, VCMI gameplay (not tested)')
 
 if __name__=='__main__':

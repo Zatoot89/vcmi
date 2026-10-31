@@ -366,7 +366,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "paintedConceptArt": painted_concepts,
         "artReadiness": {
             "status": "BLOCKED",
-            "genuineKeyPoseSourceUnits": 4 if procedural else 0,
+            "genuineKeyPoseSourceUnits": pose_report["illustratedKeyPoseCreatureCount"] if procedural else 0,
             "derivedFromSingleStillUnits": pose_report["derivedPoseCreatureCount"],
             "fullIndependentlyIllustratedBuildings": town_art_report["illustratedIndependently"],
             "townClippingRequiresReview": town_art_report["placementClippingCount"],
@@ -429,7 +429,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Painted Ebonspire scene | {painted_concepts['townScenes']} |",
         f"| Grouped sprite sheets | {pose_report['spriteSheetCount']} generated (unapproved animation) |",
         f"| VCMI mapped building overlays | {pose_report['paintedBuildingOverlays']} illustrated prototypes |",
-        f"| Distinct AI-illustrated key poses | {pose_report['illustratedKeyPoseCount']} (4 creatures) |",
+        f"| Distinct AI-illustrated key poses | {pose_report['illustratedKeyPoseCount']} across {pose_report['illustratedKeyPoseCreatureCount']} creatures |",
         f"| Derived single-still pose studies | {pose_report['derivedPoseCount']} (10 creatures; NOT illustrated) |",
         f"| Illustrated-source building derivatives | {town_art_report['townStructures']} structures from 8 source paintings |",
         f"| Town overlays clipping canvas | {town_art_report['placementClippingCount']} after {town_art_report['correctedOutOfCanvasCount']} static corrections |",
@@ -458,6 +458,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
                   output / "missing-assets.json",
                   output / "sprite-pose-report.json",
                   output / "town-art-report.json",
+                  output / "ARTWORK_BACKLOG.json",
                   output / "town-layout-corrections.json") if procedural else (
                   summary_path, output / "validation.json",
                   output / "missing-assets.json"):

@@ -32,5 +32,88 @@
   "creatureCount": 4,
   "generationMethod": "AI generated separate poses + synthetic interpolated motion",
   "humanIllustratedFrameCount": 0,
-  "gameplayVerified": false
+  "gameplayVerified": false,
+  "optionalFutureAtlases": [
+    {
+      "filename": "ashling-cinderimp.webp",
+      "firstCreature": "ashling",
+      "secondCreature": "cinderImp",
+      "expectedDimensions": [
+        1774,
+        887
+      ],
+      "sourceStatus": "MISSING",
+      "actionColumns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    },
+    {
+      "filename": "grave-doom-sentinels.webp",
+      "firstCreature": "graveSentinel",
+      "secondCreature": "doomSentinel",
+      "expectedDimensions": [
+        1774,
+        887
+      ],
+      "sourceStatus": "MISSING",
+      "actionColumns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    },
+    {
+      "filename": "hexbinder-soulweaver.webp",
+      "firstCreature": "hexbinder",
+      "secondCreature": "soulWeaver",
+      "expectedDimensions": [
+        1774,
+        887
+      ],
+      "sourceStatus": "MISSING",
+      "actionColumns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    },
+    {
+      "filename": "dusk-abyssal-reavers.webp",
+      "firstCreature": "duskReaver",
+      "secondCreature": "abyssalReaver",
+      "expectedDimensions": [
+        1774,
+        887
+      ],
+      "sourceStatus": "MISSING",
+      "actionColumns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    },
+    {
+      "filename": "umbral-eclipse-dragons.webp",
+      "firstCreature": "umbralDragon",
+      "secondCreature": "eclipseDragon",
+      "expectedDimensions": [
+        1774,
+        887
+      ],
+      "sourceStatus": "MISSING",
+      "actionColumns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    }
+  ],
+  "artworkBacklogExpectedCreatureCount": 10
 }
