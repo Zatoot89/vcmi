@@ -707,7 +707,7 @@
       },
       "blacksmith": {
         "animation": "UD_TOWN_BLACKSMITH.DEF",
-        "x": 684,
+        "x": 645,
         "y": 253,
         "z": 2,
         "area": "UD_AREA_BLACKSMITH.png",
@@ -716,7 +716,7 @@
       "marketplace": {
         "animation": "UD_TOWN_MARKETPLACE.DEF",
         "x": 511,
-        "y": 301,
+        "y": 262,
         "z": 0,
         "area": "UD_AREA_MARKETPLACE.png",
         "border": "UD_BORDER_MARKETPLACE.png"
@@ -724,14 +724,14 @@
       "resourceSilo": {
         "animation": "UD_TOWN_RESOURCESILO.DEF",
         "x": 497,
-        "y": 337,
+        "y": 262,
         "z": 1,
         "area": "UD_AREA_RESOURCESILO.png",
         "border": "UD_BORDER_RESOURCESILO.png"
       },
       "mageGuild1": {
         "animation": "UD_TOWN_MAGEGUILD1.DEF",
-        "x": 667,
+        "x": 645,
         "y": 127,
         "z": 2,
         "area": "UD_AREA_MAGEGUILD1.png",
@@ -739,7 +739,7 @@
       },
       "mageGuild2": {
         "animation": "UD_TOWN_MAGEGUILD2.DEF",
-        "x": 667,
+        "x": 645,
         "y": 101,
         "z": 0,
         "area": "UD_AREA_MAGEGUILD2.png",
@@ -747,7 +747,7 @@
       },
       "mageGuild3": {
         "animation": "UD_TOWN_MAGEGUILD3.DEF",
-        "x": 667,
+        "x": 645,
         "y": 83,
         "z": 1,
         "area": "UD_AREA_MAGEGUILD3.png",
@@ -755,7 +755,7 @@
       },
       "mageGuild4": {
         "animation": "UD_TOWN_MAGEGUILD4.DEF",
-        "x": 667,
+        "x": 645,
         "y": 56,
         "z": 2,
         "area": "UD_AREA_MAGEGUILD4.png",
@@ -763,7 +763,7 @@
       },
       "mageGuild5": {
         "animation": "UD_TOWN_MAGEGUILD5.DEF",
-        "x": 667,
+        "x": 645,
         "y": 35,
         "z": 0,
         "area": "UD_AREA_MAGEGUILD5.png",
@@ -804,7 +804,7 @@
       "horde2": {
         "animation": "UD_TOWN_HORDE2.DEF",
         "x": 10,
-        "y": 301,
+        "y": 262,
         "z": 2,
         "area": "UD_AREA_HORDE2.png",
         "border": "UD_BORDER_HORDE2.png"
@@ -812,7 +812,7 @@
       "horde2Upgr": {
         "animation": "UD_TOWN_HORDE2UPGR.DEF",
         "x": 9,
-        "y": 273,
+        "y": 262,
         "z": 0,
         "area": "UD_AREA_HORDE2UPGR.png",
         "border": "UD_BORDER_HORDE2UPGR.png"
@@ -852,7 +852,7 @@
       "dwellingLvl3": {
         "animation": "UD_TOWN_DWELLINGLVL3.DEF",
         "x": 9,
-        "y": 325,
+        "y": 262,
         "z": 2,
         "area": "UD_AREA_DWELLINGLVL3.png",
         "border": "UD_BORDER_DWELLINGLVL3.png"
@@ -860,7 +860,7 @@
       "dwellingUpLvl3": {
         "animation": "UD_TOWN_DWELLINGUPLVL3.DEF",
         "x": 9,
-        "y": 273,
+        "y": 262,
         "z": 0,
         "area": "UD_AREA_DWELLINGUPLVL3.png",
         "border": "UD_BORDER_DWELLINGUPLVL3.png"
@@ -884,7 +884,7 @@
       "dwellingLvl5": {
         "animation": "UD_TOWN_DWELLINGLVL5.DEF",
         "x": 359,
-        "y": 296,
+        "y": 262,
         "z": 0,
         "area": "UD_AREA_DWELLINGLVL5.png",
         "border": "UD_BORDER_DWELLINGLVL5.png"
@@ -900,7 +900,7 @@
       "dwellingLvl6": {
         "animation": "UD_TOWN_DWELLINGLVL6.DEF",
         "x": 220,
-        "y": 350,
+        "y": 262,
         "z": 2,
         "area": "UD_AREA_DWELLINGLVL6.png",
         "border": "UD_BORDER_DWELLINGLVL6.png"
@@ -908,7 +908,7 @@
       "dwellingUpLvl6": {
         "animation": "UD_TOWN_DWELLINGUPLVL6.DEF",
         "x": 220,
-        "y": 282,
+        "y": 262,
         "z": 0,
         "area": "UD_AREA_DWELLINGUPLVL6.png",
         "border": "UD_BORDER_DWELLINGUPLVL6.png"

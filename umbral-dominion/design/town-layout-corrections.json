@@ -1,0 +1,290 @@
+{
+  "version": "0.5-alpha",
+  "canvas": {
+    "width": 800,
+    "height": 374
+  },
+  "overlayBounds": {
+    "width": 155,
+    "height": 112
+  },
+  "method": "CONSERVATIVE_AXIS_CLAMP",
+  "correctedCount": 15,
+  "corrections": [
+    {
+      "building": "blacksmith",
+      "before": {
+        "x": 684,
+        "y": 253,
+        "z": 2
+      },
+      "after": {
+        "x": 645,
+        "y": 253,
+        "z": 2
+      },
+      "delta": {
+        "x": -39,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "marketplace",
+      "before": {
+        "x": 511,
+        "y": 301,
+        "z": 0
+      },
+      "after": {
+        "x": 511,
+        "y": 262,
+        "z": 0
+      },
+      "delta": {
+        "x": 0,
+        "y": -39
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "resourceSilo",
+      "before": {
+        "x": 497,
+        "y": 337,
+        "z": 1
+      },
+      "after": {
+        "x": 497,
+        "y": 262,
+        "z": 1
+      },
+      "delta": {
+        "x": 0,
+        "y": -75
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "mageGuild1",
+      "before": {
+        "x": 667,
+        "y": 127,
+        "z": 2
+      },
+      "after": {
+        "x": 645,
+        "y": 127,
+        "z": 2
+      },
+      "delta": {
+        "x": -22,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "mageGuild2",
+      "before": {
+        "x": 667,
+        "y": 101,
+        "z": 0
+      },
+      "after": {
+        "x": 645,
+        "y": 101,
+        "z": 0
+      },
+      "delta": {
+        "x": -22,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "mageGuild3",
+      "before": {
+        "x": 667,
+        "y": 83,
+        "z": 1
+      },
+      "after": {
+        "x": 645,
+        "y": 83,
+        "z": 1
+      },
+      "delta": {
+        "x": -22,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "mageGuild4",
+      "before": {
+        "x": 667,
+        "y": 56,
+        "z": 2
+      },
+      "after": {
+        "x": 645,
+        "y": 56,
+        "z": 2
+      },
+      "delta": {
+        "x": -22,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "mageGuild5",
+      "before": {
+        "x": 667,
+        "y": 35,
+        "z": 0
+      },
+      "after": {
+        "x": 645,
+        "y": 35,
+        "z": 0
+      },
+      "delta": {
+        "x": -22,
+        "y": 0
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "horde2",
+      "before": {
+        "x": 10,
+        "y": 301,
+        "z": 2
+      },
+      "after": {
+        "x": 10,
+        "y": 262,
+        "z": 2
+      },
+      "delta": {
+        "x": 0,
+        "y": -39
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "horde2Upgr",
+      "before": {
+        "x": 9,
+        "y": 273,
+        "z": 0
+      },
+      "after": {
+        "x": 9,
+        "y": 262,
+        "z": 0
+      },
+      "delta": {
+        "x": 0,
+        "y": -11
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "dwellingLvl3",
+      "before": {
+        "x": 9,
+        "y": 325,
+        "z": 2
+      },
+      "after": {
+        "x": 9,
+        "y": 262,
+        "z": 2
+      },
+      "delta": {
+        "x": 0,
+        "y": -63
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "dwellingUpLvl3",
+      "before": {
+        "x": 9,
+        "y": 273,
+        "z": 0
+      },
+      "after": {
+        "x": 9,
+        "y": 262,
+        "z": 0
+      },
+      "delta": {
+        "x": 0,
+        "y": -11
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "dwellingLvl5",
+      "before": {
+        "x": 359,
+        "y": 296,
+        "z": 0
+      },
+      "after": {
+        "x": 359,
+        "y": 262,
+        "z": 0
+      },
+      "delta": {
+        "x": 0,
+        "y": -34
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "dwellingLvl6",
+      "before": {
+        "x": 220,
+        "y": 350,
+        "z": 2
+      },
+      "after": {
+        "x": 220,
+        "y": 262,
+        "z": 2
+      },
+      "delta": {
+        "x": 0,
+        "y": -88
+      },
+      "manualGameReviewRequired": true
+    },
+    {
+      "building": "dwellingUpLvl6",
+      "before": {
+        "x": 220,
+        "y": 282,
+        "z": 0
+      },
+      "after": {
+        "x": 220,
+        "y": 262,
+        "z": 0
+      },
+      "delta": {
+        "x": 0,
+        "y": -20
+      },
+      "manualGameReviewRequired": true
+    }
+  ],
+  "certification": "STATIC_CANVAS_BOUNDS_ONLY",
+  "vcmiInGameTested": false,
+  "clickableAreaTested": false,
+  "layerOcclusionTested": false,
+  "note": "Coordinates conservatively clamped to prevent whole-overlay off-canvas placement; 36 structures still share eight paintings. This is not a finished town design."
+}

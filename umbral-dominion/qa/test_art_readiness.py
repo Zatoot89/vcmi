@@ -29,7 +29,10 @@ def check(path):
     assert town['reusedIllustrationDerivatives']==36
     assert town['illustratedIndependently']==0
     assert not town['vcmiTownRuntimeVerified']
-    assert isinstance(town['placementClippingCount'],int)
+    assert town['placementClippingCount']==0, 'town overlay exceeds 800x374 preview canvas'
+    assert town['correctedOutOfCanvasCount']==15
+    assert town['coordinateCorrectionsFile']=='design/town-layout-corrections.json'
+    assert town['overlapReviewCount']>=0
     assert validation['artReadiness']['status']=='BLOCKED'
     assert validation['artReadiness']['genuineKeyPoseSourceUnits']==4
     assert validation['artReadiness']['derivedFromSingleStillUnits']==10
@@ -47,7 +50,8 @@ def check(path):
             assert unit['illustratedKeyPoseCount']==0 and unit['derivedKeyPoseCount']==4
             assert unit['illustrationOrigin']=='PROCEDURALLY_DERIVED_FROM_ONE_PAINTED_STILL'
     for name in ('DERIVED_POSE_REVIEW.png','KEYPOSE_APPROVAL_SHEET.png',
-                 'TOWN_STRUCTURE_REVIEW.png','TOWN_LAYOUT_DIAGNOSTIC.png'):
+                 'TOWN_STRUCTURE_REVIEW.png','TOWN_LAYOUT_DIAGNOSTIC.png',
+                 'TOWN_LAYOUT_BEFORE_AFTER.png'):
         p=folder/name
         with Image.open(p) as im:im.verify()
     with zipfile.ZipFile(folder/'umbral-dominion-dev-DRAFT.zip') as z:
@@ -61,7 +65,8 @@ def check(path):
     print('PASS prototype coverage: 14 creatures, 16 AI-illustrated source poses + 40 single-still-derived studies')
     print('PASS town asset audit: 36 illustrative derivatives from ONLY 8 independently painted building sources')
     print('PASS honesty gates: art/release blocked, placement and VCMI gameplay explicitly unverified')
-    print(f'INFO town placements extending past 800x374 canvas: {town["placementClippingCount"]} (needs hand QA)')
+    print('PASS town placement bounds: 15 corrected coordinates; 0 out-of-canvas objects in static preview')
+    print(f'REVIEW town artistic occlusions: {town["overlapReviewCount"]} potential AABB overlaps; real-game checks pending')
 
 if __name__=='__main__':
     check(sys.argv[1] if len(sys.argv)>1 else 'umbral-dominion/build')

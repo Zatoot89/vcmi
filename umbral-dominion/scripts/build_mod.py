@@ -263,7 +263,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     manifest = {
         "name": "Umbral Dominion (original-art prototype)",
         "description": "Procedurally illustrated alpha preview. Requires Windows VCMI gameplay QA.",
-        "version": "0.4.0-alpha",
+        "version": "0.5.0-alpha",
         "author": "Zatoot89",
         "contact": "https://github.com/Zatoot89/vcmi",
         "modType": "Town",
@@ -370,6 +370,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
             "derivedFromSingleStillUnits": pose_report["derivedPoseCreatureCount"],
             "fullIndependentlyIllustratedBuildings": town_art_report["illustratedIndependently"],
             "townClippingRequiresReview": town_art_report["placementClippingCount"],
+            "townLayoutCorrectedStatic": town_art_report["correctedOutOfCanvasCount"],
+            "townOverlapsNeedReview": town_art_report["overlapReviewCount"],
             "vcmiGameplayVerified": False,
         },
         "townArtPipeline": {
@@ -430,7 +432,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Distinct AI-illustrated key poses | {pose_report['illustratedKeyPoseCount']} (4 creatures) |",
         f"| Derived single-still pose studies | {pose_report['derivedPoseCount']} (10 creatures; NOT illustrated) |",
         f"| Illustrated-source building derivatives | {town_art_report['townStructures']} structures from 8 source paintings |",
-        f"| Town overlays clipping canvas | {town_art_report['placementClippingCount']} (requires manual QA) |",
+        f"| Town overlays clipping canvas | {town_art_report['placementClippingCount']} after {town_art_report['correctedOutOfCanvasCount']} static corrections |",
+        f"| Town layer overlap review candidates | {town_art_report['overlapReviewCount']} (game QA needed) |",
         f"| Artist-authored animation frames | {pose_report['overallAuthoredAnimationFrames']} |",
         "| Windows install smoke | Separate Windows Actions job; not gameplay |",
         "| Production-quality artwork | NOT DELIVERED |",
@@ -450,7 +453,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         for p in (summary_path, output / "validation.json",
                   output / "missing-assets.json",
                   output / "sprite-pose-report.json",
-                  output / "town-art-report.json") if procedural else (
+                  output / "town-art-report.json",
+                  ROOT / "design" / "town-layout-corrections.json") if procedural else (
                   summary_path, output / "validation.json",
                   output / "missing-assets.json"):
             z.write(p, p.relative_to(output))

@@ -53,3 +53,9 @@ The Windows CI smoke test is **not** a gameplay or launch test. Full acceptance 
 - GitHub Actions continues to run separate Linux JSON/asset QA and a **Windows installation-only smoke test**. Neither proves gameplay.
 
 **Release remains BLOCKED.** Future work: 40 authentic source poses for the remaining ten, complete authored combat frames, uniquely illustrated towns, engine runtime testing.
+
+## v0.5 static placement correction — bounded, reversible, NOT gameplay-verified
+
+The v0.4 town structure configuration had **15 overlays with x/y coordinates beyond the 800×374 preview canvas** (155×112 preview sprites). The original coordinates and exact before/after delta for each are saved in `design/town-layout-corrections.json`. This milestone conservatively clamps only those 15 x/y positions inside the preview image; other 21 positions and all z values are unchanged.
+
+This resolves *static* canvas clipping but **does not solve artistic overlapping, clickable masks, depth order or the real VCMI renderer**. The new `TOWN_LAYOUT_BEFORE_AFTER.png` and `town-art-report.json` contain the evidence; the report lists potential bounding-box occlusions for review. The CI gate fails if any town overlay remains outside canvas bounds.

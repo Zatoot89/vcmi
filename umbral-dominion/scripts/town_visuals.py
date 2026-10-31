@@ -54,6 +54,11 @@ def build_town_visuals(generated, build, town):
         originals=[art.crop((i%4*256,i//4*288,(i%4+1)*256,(i//4+1)*288)) for i in range(8)]
     structs=town['structures']
     audit=[]
+    correction_file=ROOT/'design'/'town-layout-corrections.json'
+    corrections=json.loads(correction_file.read_text(encoding='utf-8'))
+    corrected_by_name={row['building']:row for row in corrections['corrections']}
+    if len(corrected_by_name)!=15:
+        raise ValueError('Expected 15 audited v0.5 coordinate adjustments')
     for name in sorted(structs):
         src_idx=archetype(name)
         arche=BASES[src_idx]
@@ -78,6 +83,12 @@ def build_town_visuals(generated, build, town):
         source=structs[name]
         x=int(source.get('x',0));y=int(source.get('y',0));z=int(source.get('z',0))
         clipped=max(0,-x)+max(0,-y)+max(0,x+TILE[0]-TOWN[0])+max(0,y+TILE[1]-TOWN[1])
+        if clipped:
+            raise ValueError(f'{name} extends outside town canvas after v0.5 layout adjustments: {clipped}px')
+        if name in corrected_by_name:
+            expected=corrected_by_name[name]['after']
+            if (x,y,z)!=(expected['x'],expected['y'],expected['z']):
+                raise ValueError(f'Layout manifest mismatch for {name}')
         audit.append({'building':name,'template':arche,'illustratedIndependently':False,
                       'derivedFrom':arche,'frameCount':2,'generatedKey':dest,
                       'x':x,'y':y,'z':z,'outOfCanvasByPixels':clipped,
@@ -104,9 +115,39 @@ def build_town_visuals(generated, build, town):
         with Image.open(generated/(item['generatedKey']+'_FRAME0.png')) as layer:
             town_view.paste(layer,(item['x'],item['y']),layer)
     town_view.save(build/'TOWN_LAYOUT_DIAGNOSTIC.png',optimize=True)
+    # Side-by-side approximate composite: only bbox placement is tested, not the
+    # artistic overlap/click areas or actual in-game town renderer.
+    with Image.open(backdrop) as image:
+        before_view=image.convert('RGBA')
+    for item in sorted(audit,key=lambda t:(t['z'],t['building'])):
+        row=corrected_by_name.get(item['building'])
+        old=row['before'] if row else item
+        with Image.open(generated/(item['generatedKey']+'_FRAME0.png')) as layer:
+            before_view.paste(layer,(old['x'],old['y']),layer)
+    comparison=Image.new('RGB',(1600,416),(22,16,36))
+    comparison.paste(before_view.convert('RGB'),(0,42))
+    comparison.paste(town_view.convert('RGB'),(800,42))
+    legend=ImageDraw.Draw(comparison)
+    legend.text((16,12),'ORIGINAL COORDINATES: 15 OUT-OF-BOUNDS',fill=(244,145,150))
+    legend.text((816,12),'V0.5 CLAMPED COORDINATES: 0 OUT-OF-BOUNDS; GAME QA PENDING',fill=(208,189,247))
+    comparison.save(build/'TOWN_LAYOUT_BEFORE_AFTER.png',optimize=True)
+    # Intersections are logged for human review; overlapping building layers are
+    # intentional in many VCMI towns and must never be auto-resolved blindly.
+    intersections=[]
+    for i,left in enumerate(audit):
+        for right in audit[i+1:]:
+            dx=min(left['x']+TILE[0],right['x']+TILE[0])-max(left['x'],right['x'])
+            dy=min(left['y']+TILE[1],right['y']+TILE[1])-max(left['y'],right['y'])
+            if dx>0 and dy>0 and dx*dy >= TILE[0]*TILE[1]*0.4:
+                intersections.append({'first':left['building'],'second':right['building'],
+                                      'aabbOverlapPercent':round(100*dx*dy/(TILE[0]*TILE[1]),1)})
     stats={'townStructures':len(audit),'sourcePaintings':len(BASES),
            'illustratedIndependently':0,'reusedIllustrationDerivatives':len(audit),
            'placementClippingCount':sum(item['outOfCanvasByPixels']>0 for item in audit),
+           'correctedOutOfCanvasCount':len(corrected_by_name),
+           'overlapReviewCount':len(intersections),
+           'overlapReviewExamples':sorted(intersections,key=lambda p:-p['aabbOverlapPercent'])[:30],
+           'coordinateCorrectionsFile':'design/town-layout-corrections.json',
            'clickMasksRuntimeVerified':False,'vcmiTownRuntimeVerified':False,
            'structures':audit,'releaseApproved':False}
     (build/'town-art-report.json').write_text(json.dumps(stats,indent=2)+'\n',encoding='utf-8')
