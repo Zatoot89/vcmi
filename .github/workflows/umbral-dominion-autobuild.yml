@@ -7,6 +7,7 @@ on:
       - "umbral-dominion/design/**"
       - "umbral-dominion/scripts/**"
       - "umbral-dominion/assets/**"
+      - "umbral-dominion/assets-source/**"
       - "umbral-dominion/qa/**"
       - ".github/workflows/umbral-dominion-autobuild.yml"
   workflow_dispatch:
@@ -70,5 +71,7 @@ jobs:
             umbral-dominion/build/validation.json
             umbral-dominion/build/missing-assets.json
             umbral-dominion/build/ASSET_PREVIEW.png
+            umbral-dominion/build/ARTWORK_PREVIEW.png
+            umbral-dominion/build/artwork-concepts.json
           if-no-files-found: warn
           retention-days: 30

@@ -1,0 +1,29 @@
+{
+  "status": "PAINTED_CONCEPTS_NOT_FINAL",
+  "creatureAtlas": {
+    "columns": 7,
+    "rows": 2,
+    "tile": [
+      144,
+      112
+    ]
+  },
+  "heroAtlas": {
+    "columns": 8,
+    "rows": 1,
+    "tile": [
+      88,
+      110
+    ]
+  },
+  "townScene": [
+    800,
+    374
+  ],
+  "warnings": [
+    "Tier 2 figures currently depict skeletons, not hounds",
+    "Tier 3 figures depict specters, not archers",
+    "Repeated stills are not animations",
+    "The town scene is not individually layered"
+  ]
+}

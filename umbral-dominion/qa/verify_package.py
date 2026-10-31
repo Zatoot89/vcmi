@@ -38,6 +38,16 @@ with zipfile.ZipFile(archive) as z:
     assert image_count>=250,f"Only {image_count} PNG files present"
     for item in configs:
         assert json.loads(z.read(item)),"Empty JSON config: "+item
+    art=report["paintedConceptArt"]
+    assert art["creatures"]==14 and art["heroes"]==8 and art["townScenes"]==1
+    assert not report["releaseReady"] and art["genuineAnimationSequences"]==0
+    assert report["windowsQA"]=="NOT_TESTED"
+    with Image.open(io.BytesIO(z.read(root+"Content/data/UD_TOWN_BACKGROUND.png"))) as im:
+        assert im.size==(800,374)
+    for creature in ("ASHLING","UMBRALDRAGON","GLOOMHOUND"):
+        with Image.open(io.BytesIO(z.read(root+"Content/sprites/UD_"+creature+"_FRAME0.png"))) as img:
+            assert img.size==(120,110)
+    print("PAINTED CONCEPT QA: 14 unit stills, 8 portraits, 1 scene — no authentic motion.")
     print(f"PASS prototype static QA: {image_count} verified PNGs; "
           f"{len([n for n in names if n.endswith('.json') and '/sprites/' in n])} "
           "animation descriptors; 14 dwellings; 14 creatures; music OGG.")

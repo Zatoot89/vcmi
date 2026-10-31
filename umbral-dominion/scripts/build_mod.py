@@ -11,6 +11,7 @@ import sys
 import zipfile
 from collections import Counter
 from art_pipeline import generate_assets, generate_music, make_preview
+from apply_concept_art import apply_painted_concepts
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -292,6 +293,10 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     generated = generate_assets(expected, generated_dir) if procedural else {"covered": 0, "generated": 0}
     if procedural:
         make_preview(generated_dir, output / "ASSET_PREVIEW.png")
+        painted_concepts = apply_painted_concepts(generated_dir, output)
+    else:
+        painted_concepts = {"creatures": 0, "heroes": 0, "townScenes": 0,
+                            "approvedCharacterDesigns": 0, "genuineAnimationSequences": 0}
     supplied_dir = ROOT / "assets"
     # Animations are modern VCMI JSON; individual frames are PNG.
     for source in sorted(generated_dir.glob("*")) if procedural else []:
@@ -341,6 +346,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "originalArtwork": False,
         "musicCreated": music_file is not None,
         "visualPlaceholderCount": placeholder_count,
+        "paintedConceptArt": painted_concepts,
+        "productionArtComplete": False,
         "artworkQuality": "PLACEHOLDER_CONCEPT_ONLY" if placeholder_count else "UNVERIFIED_CUSTOM",
         "animationQuality": "PROCEDURAL_STILL_FRAMES_NOT_PRODUCTION_ANIMATION",
         "releaseReady": False,
@@ -351,7 +358,10 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "playable": False,
         "runtimeVerified": False,
         "notes": ["Ebonspire JSON configuration is generated; UI graphics and runtime verification remain incomplete.",
-                  "Art is original but geometric/procedural and NOT release-quality.",
+                  "Painterly concepts now replace unit stills, portrait icons and Ebonspire background.",
+                  "Tier 2/Tier 3 painted concepts do not match named hounds/archers.",
+                  "Animation groups reuse static art. They are NOT genuine motion.",
+                  "Other graphics remain procedural placeholders.",
                   "Hero specialties and hero-class map objects are provisional.",
                   "Schema validation DOES NOT mean VCMI runtime compatibility.",
                   "Never redistribute Heroes III assets as part of this package."]
@@ -370,6 +380,9 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Artwork covered | {len(assets)-len(missing)} / {len(assets)} (procedural placeholders) |",
         f"| Original ambient music | {'YES' if music_file else 'NO'} |",
         f"| Procedural placeholder references | {placeholder_count} |",
+        f"| Painted creature concept stills | {painted_concepts['creatures']} (NOT final roster art) |",
+        f"| Painted hero portrait concepts | {painted_concepts['heroes']} |",
+        f"| Painted Ebonspire scene | {painted_concepts['townScenes']} |",
         "| Production-quality artwork | NOT DELIVERED |",
         "| Genuine animation frames | NOT DELIVERED |",
         "| Production release | BLOCKED |",
