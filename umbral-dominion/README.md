@@ -26,15 +26,28 @@ Official docs: https://vcmi.eu/modders/Readme/
 
 ## Generated graphics and installing on Windows
 
-**Artwork is NOT finished.** All generated silhouettes, town backgrounds, UI graphics and animation loops are **temporary placeholders**. Their presence does not mean production art exists. The generator creates geometric PNGs and prototype VCMI JSON frame sequences with a composed OGG theme. They are not polished fantasy illustrations or genuine gameplay animations. An artifact preview `ASSET_PREVIEW.png` shows the generated look. See [WINDOWS_QA.md](WINDOWS_QA.md) for game tests, or install the draft with `scripts/install_windows.ps1` after downloading the CI ZIP. Runtime compatibility is still unverified.
+**Artwork is NOT finished.** This stage introduces **14 painted creature concept stills, eight painted hero portrait concepts, and one illustrated 800×374 Ebonspire backdrop**, committed under `assets-source/`. Most other graphics (building overlays, sprite maps, specialty icons, siege, puzzle assets) remain geometric placeholders. The creature animation groups repeat static painted concepts rather than real motion frames. Two previews are included: `ARTWORK_PREVIEW.png` shows the illustrated concept studies; `ASSET_PREVIEW.png` shows the unrefined procedural assets still in the generator. See [WINDOWS_QA.md](WINDOWS_QA.md) for game tests, or install the draft with `scripts/install_windows.ps1` after downloading the CI ZIP. Runtime compatibility is still unverified.
 
 ## Release status — BLOCKED
 
 - GitHub Actions green means **JSON structure and archive packaging pass only**.
-- The art generator creates **procedural placeholder imagery** rather than finished original illustrations.
+- Some images are now original **AI-painted concept studies**; unfinished assets are still procedural placeholders. Tier-2 art depicts skeletons rather than named hounds, and tier-3 art depicts wraiths rather than named archers. The concepts are not roster-approved.
 - The 14 creatures require **distinct approved visual designs and individually authored motion frames**; mirrored or slightly shifted still images do not count.
 - Eight heroes need finished portraits and specialities; Ebonspire needs a professionally illustrated town, buildings, town map and screens.
 - Gameplay on **Windows VCMI has not been tested**.
 - Running the generator with `--release` deliberately fails rather than shipping these placeholders as a completed faction.
 
 **Do not call this a completed playable mod.** The package is only an engineering prototype.
+
+### Latest illustrated concept stage (31 October 2026)
+
+- [x] Painted 800×374 Ebonspire panorama integrated as `UD_TOWN_BACKGROUND.png`.
+- [x] 14 cropped painted creature stills loaded via `assets-source/creature-concepts.png`.
+- [x] 8 painted hero portrait studies loaded via `assets-source/hero-portraits.png`.
+- [x] GitHub Actions build and static archive QA **PASS** ([run #41231372364](https://github.com/Zatoot89/vcmi/actions/runs/41231372364)).
+- [ ] Correct T2 hound and T3 archer artwork and get visual approval for every unit.
+- [ ] Produce 14 genuine, individually authored battle animations; static frames aren't movement.
+- [ ] Produce 36 aligned building overlays, map-town animations, siege/puzzle/UI graphics.
+- [ ] Test actual Windows VCMI gameplay with screenshots and logs.
+
+**Technical CI PASS ≠ playable or finished art.** Release is deliberately blocked.

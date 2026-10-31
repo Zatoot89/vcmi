@@ -1,6 +1,6 @@
 # Umbral Dominion — Production Art Acceptance Criteria
 
-**Status: blocked. The CI artifact contains temporary procedural silhouettes and is not finished art.**
+**Status: blocked. The new alpha now contains illustrated source concepts for 14 creatures, 8 heroes and the Ebonspire town background, but they are NOT finished art or animation.**
 
 ## Assets to produce (source artwork, not auto-generated dummy files)
 
@@ -25,3 +25,9 @@
 ### Deliverables required for a release
 
 A single installable VCMI package with 14 distinct creature designs and animations, eight heroes, Ebonspire town art, map assets, and all gameplay checks PASS. The current automated ZIP is not this deliverable.
+
+## Stage 1 painted study — evidence
+
+The `assets-source/` folder contains original AI-painted concept atlases, and `apply_concept_art.py` crops these into the build. The updated [GitHub Actions build](https://github.com/Zatoot89/vcmi/actions/runs/41231372364) passes JSON/package validation, not gameplay. It reports 14 creature stills, eight portrait studies and one painted background. **Zero** actual animation sequences are approved, and Windows runtime testing is still outstanding.
+
+**Known invalid creature mappings:** Gloom Hound / Dread Hound have skeleton-like studies and Veil Archer / Nightstalker have wraith-like studies. These must be replaced by real hound and archer designs before any art sign-off. Please don't treat image file counts or repeated still frames as completion.
