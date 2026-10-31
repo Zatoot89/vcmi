@@ -89,12 +89,12 @@ def make_creatures(raw):
         if src["role"] == "ranged":
             entity["shots"] = 12
             entity["graphics"]["missile"] = {
-                "animation": "UD_VOID_ARROW.json",
+                "projectile": "UD_VOID_ARROW.json",
                 "attackClimaxFrame": 3,
                 "offset": {"upperX": 70, "upperY": 44,
                            "middleX": 88, "middleY": 75,
                            "lowerX": 86, "lowerY": 100},
-                "frameAngles": [-90, -45, 0, 45, 90],
+                "frameAngles": [90, 45, 0, -45, -90],
             }
         if level == 7:
             entity["doubleWide"] = True

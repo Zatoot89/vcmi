@@ -341,7 +341,7 @@ def preview_sheet(sheets, output):
 
 def generate_void_arrow_projectile(dest):
     """Minimal original placeholder for archers; orientation still requires VCMI QA."""
-    angles=(-90,-45,0,45,90)
+    angles=(90,45,0,-45,-90)
     frames=[]
     for index,angle in enumerate(angles):
         img=Image.new('RGBA',(64,64))
