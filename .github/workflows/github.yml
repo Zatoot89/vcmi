@@ -6,6 +6,9 @@ on:
       - beta
       - master
       - develop
+    paths-ignore:
+      - 'umbral-dominion/**'
+      - '.github/workflows/umbral-dominion*.yml'
   pull_request:
   workflow_dispatch:
     inputs:
