@@ -10,6 +10,7 @@ import shutil
 import sys
 import zipfile
 from collections import Counter
+from art_pipeline import generate_assets, generate_music
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -199,7 +200,17 @@ def validate_schemas(schema_dir, data):
         results[typ] = count
     return results
 
-def build(schema_dir, output, require_art=False):
+def replace_custom_animation_refs(value):
+    """Map our virtual DEF identifiers to VCMI-native JSON animation files."""
+    if isinstance(value, dict):
+        return {k: replace_custom_animation_refs(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [replace_custom_animation_refs(v) for v in value]
+    if isinstance(value, str) and value.startswith("UD_") and value.upper().endswith(".DEF"):
+        return value[:-4] + ".json"
+    return value
+
+def build(schema_dir, output, require_art=False, procedural=True):
     creatures_raw = load(DESIGNS / "creatures.json")
     heroes_raw = load(DESIGNS / "heroes.json")
     faction_design = load(DESIGNS / "faction-design.json")
@@ -224,21 +235,24 @@ def build(schema_dir, output, require_art=False):
     creatures, creature_assets = make_creatures(creatures_raw)
     heroes, hero_assets = make_heroes(heroes_raw)
     classes, class_assets = make_hero_classes()
+    # Generated artwork is explicitly a prototype, not a substitute for final art.
+    town["tavernVideo"] = "TAVERN.BIK"  # use installed original-game data, do not redistribute it
+    town["siege"]["imagePrefix"] = "SGIN"  # base-game siege layers until bespoke artwork is QA-tested
     faction = {FACTION_ID: {
         "name": faction_design["name"],
-        "description": "Dark fantasy faction, draft without the town implementation.",
+        "description": "Ebonspire original-art gameplay prototype; Windows runtime not verified.",
         "boat": "boatNecropolis",
         "alignment": "evil",
         "nativeTerrain": "subterranean",
-        "creatureBackground": {"120px": "TPCASNEC", "130px": "CRBKGNEC"},
+        "creatureBackground": {"120px": "UD_CREATURE_BG_120.png", "130px": "UD_CREATURE_BG_130.png"},
         "town": town,
         "puzzleMap": town_design["puzzleMap"],
         "preferUndergroundPlacement": True,
     }}
     manifest = {
-        "name": "Umbral Dominion (development draft)",
-        "description": "Generated VCMI faction and creature/hero definitions. Not a playable town.",
-        "version": "0.0.3",
+        "name": "Umbral Dominion (original-art prototype)",
+        "description": "Procedurally illustrated alpha preview. Requires Windows VCMI gameplay QA.",
+        "version": "0.1.0",
         "author": "Zatoot89",
         "contact": "https://github.com/Zatoot89/vcmi",
         "modType": "Town",
@@ -247,6 +261,10 @@ def build(schema_dir, output, require_art=False):
         "heroClasses": ["config/heroClasses.json"],
         "heroes": ["config/heroes.json"],
     }
+    creatures = replace_custom_animation_refs(creatures)
+    heroes = replace_custom_animation_refs(heroes)
+    classes = replace_custom_animation_refs(classes)
+    faction = replace_custom_animation_refs(faction)
     validated = validate_schemas(schema_dir, [
         ("creatures", "creature.json", creatures),
         ("heroes", "hero.json", heroes),
@@ -265,16 +283,39 @@ def build(schema_dir, output, require_art=False):
     write(config / "faction.json", faction)
     town_assets = [{"owner": "Ebonspire", "type": "town graphics", "filename": name}
                    for name in town_design["requiredAssets"]]
-    assets = creature_assets + hero_assets + class_assets + town_assets
+    assets = creature_assets + hero_assets + class_assets + town_assets + [
+        {"owner": "Ebonspire", "type": "creature screen", "filename": "UD_CREATURE_BG_120.png"},
+        {"owner": "Ebonspire", "type": "creature screen", "filename": "UD_CREATURE_BG_130.png"},
+    ]
+    expected = sorted(set(a["filename"] for a in assets))
+    generated_dir = output / "generated-assets"
+    generated = generate_assets(expected, generated_dir) if procedural else {"covered": 0, "generated": 0}
     supplied_dir = ROOT / "assets"
+    # Animations are modern VCMI JSON; individual frames are PNG.
+    for source in sorted(generated_dir.glob("*")) if procedural else []:
+        if source.name == "ASSET_CATALOG.json":
+            continue
+        paths = ["sprites"] if source.suffix.lower() == ".json" else ["data", "sprites"]
+        for category in paths:
+            target = mod / "Content" / category / source.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
     for a in assets:
-        source = supplied_dir / a["filename"]
-        a["provided"] = source.is_file()
-        if a["provided"]:
-            destination = mod / "Content" / "sprites" / a["filename"]
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
+        filename = a["filename"]
+        generated_name = filename[:-4] + ".json" if filename.upper().endswith(".DEF") else filename
+        source = supplied_dir / generated_name
+        if not source.exists() and not filename.upper().endswith(".DEF"):
+            source = supplied_dir / filename
+        a["suppliedByUser"] = source.is_file()
+        a["provided"] = a["suppliedByUser"] or (generated_dir / generated_name).is_file()
+        a["prototype"] = bool(not a["suppliedByUser"] and a["provided"])
+        if a["suppliedByUser"]:
+            for category in (["sprites"] if source.suffix.lower() == ".json" else ["data", "sprites"]):
+                target = mod / "Content" / category / generated_name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
     missing = [a for a in assets if not a["provided"]]
+    music_file = generate_music(mod) if procedural else None
     write(output / "missing-assets.json", missing)
     write(output / "validation.json", {
         "schemaDirectory": str(schema_dir),
@@ -283,10 +324,18 @@ def build(schema_dir, output, require_art=False):
         "missingArtCount": len(missing),
         "townImplemented": True,
         "townRuntimeTested": False,
+        "proceduralPrototypeArt": procedural,
+        "generatedFileCount": generated["generated"],
+        "generatedAssetReferences": generated["covered"],
+        "originalArtwork": False,
+        "musicCreated": music_file is not None,
+        "visualPlaceholderCount": sum(a["prototype"] for a in assets),
         "townBuildingCount": len(town["buildings"]),
         "townDwellingCount": sum(k.startswith("dwelling") for k in town["buildings"]),
         "playable": False,
+        "runtimeVerified": False,
         "notes": ["Ebonspire JSON configuration is generated; UI graphics and runtime verification remain incomplete.",
+                  "Art is original but geometric/procedural and NOT release-quality.",
                   "Hero specialties and hero-class map objects are provisional.",
                   "Schema validation DOES NOT mean VCMI runtime compatibility.",
                   "Never redistribute Heroes III assets as part of this package."]
@@ -302,8 +351,10 @@ def build(schema_dir, output, require_art=False):
         f"| Missing artwork files | {len(missing)} |",
         f"| Ebonspire town structures/buildings | {len(town['buildings'])} configured |",
         "| Ebonspire dwelling buildings | 14 configured |",
-        "| Playable Ebonspire town | NOT YET |",
-        "| Ready to install | NO |",
+        f"| Artwork covered | {len(assets)-len(missing)} / {len(assets)} (procedural placeholders) |",
+        f"| Original ambient music | {'YES' if music_file else 'NO'} |",
+        "| Playable Ebonspire town | NOT RUNTIME TESTED |",
+        "| Prototype install smoke test | MANUAL WINDOWS QA REQUIRED |",
         "", "This is a DEVELOPMENT BUILD. Do not install it as a completed faction."
     ]
     summary_path = output / "BUILD_REPORT.md"
@@ -327,9 +378,12 @@ def main():
     parser.add_argument("--schemas", type=Path, default=PROJECT_ROOT / "config" / "schemas")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--strict-assets", action="store_true")
+    parser.add_argument("--no-generated-art", action="store_true",
+                        help="Require licensed user-supplied graphics instead of generated prototypes")
     args = parser.parse_args()
     try:
-        build(args.schemas, args.out, args.strict_assets)
+        build(args.schemas, args.out, args.strict_assets,
+              procedural=not args.no_generated_art)
     except Exception as exc:
         print(f"BUILD FAILED: {exc}", file=sys.stderr)
         sys.exit(1)
