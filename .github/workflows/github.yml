@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - 'umbral-dominion/**'
       - '.github/workflows/umbral-dominion*.yml'
+      - '.github/workflows/github.yml' # workflow edits are tested via workflow_dispatch
   pull_request:
   workflow_dispatch:
     inputs:
@@ -21,7 +22,7 @@ env:
   VCMI_ENABLE_LTO: ${{ (github.ref == 'refs/heads/master' || inputs.enable_lto) && 'ON' || 'OFF' }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
