@@ -12,6 +12,7 @@ import zipfile
 from collections import Counter
 from art_pipeline import generate_assets, generate_music, make_preview
 from apply_concept_art import apply_painted_concepts
+from compile_sprites import generate_pose_sheets
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -253,7 +254,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     manifest = {
         "name": "Umbral Dominion (original-art prototype)",
         "description": "Procedurally illustrated alpha preview. Requires Windows VCMI gameplay QA.",
-        "version": "0.1.0",
+        "version": "0.2.0-alpha",
         "author": "Zatoot89",
         "contact": "https://github.com/Zatoot89/vcmi",
         "modType": "Town",
@@ -294,7 +295,10 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     if procedural:
         make_preview(generated_dir, output / "ASSET_PREVIEW.png")
         painted_concepts = apply_painted_concepts(generated_dir, output)
+        pose_report = generate_pose_sheets(generated_dir, output)
     else:
+        pose_report = {"creatureCount": 0, "spriteSheetCount": 0, "paintedBuildingOverlays": 0,
+                       "overallAuthoredAnimationFrames": 0}
         painted_concepts = {"creatures": 0, "heroes": 0, "townScenes": 0,
                             "approvedCharacterDesigns": 0, "genuineAnimationSequences": 0}
     supplied_dir = ROOT / "assets"
@@ -347,9 +351,16 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "musicCreated": music_file is not None,
         "visualPlaceholderCount": placeholder_count,
         "paintedConceptArt": painted_concepts,
+        "spritePosePipeline": {
+            "creatures": pose_report["creatureCount"],
+            "spriteSheets": pose_report["spriteSheetCount"],
+            "buildingOverlays": pose_report["paintedBuildingOverlays"],
+            "artistAuthoredAnimationFrames": pose_report["overallAuthoredAnimationFrames"],
+            "animationStatus": "GENERATED_MOTION_PREVIEW_REQUIRES_AUTHOR_ART",
+        },
         "productionArtComplete": False,
         "artworkQuality": "PLACEHOLDER_CONCEPT_ONLY" if placeholder_count else "UNVERIFIED_CUSTOM",
-        "animationQuality": "PROCEDURAL_STILL_FRAMES_NOT_PRODUCTION_ANIMATION",
+        "animationQuality": "PROCEDURALLY_POSED_FRAMES_NOT_HAND_AUTHORED",
         "releaseReady": False,
         "windowsQA": "NOT_TESTED",
         "sourceImagesAreReleaseArt": False,
@@ -360,7 +371,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "notes": ["Ebonspire JSON configuration is generated; UI graphics and runtime verification remain incomplete.",
                   "Painterly concepts now replace unit stills, portrait icons and Ebonspire background.",
                   "Tier 2/Tier 3 painted concepts do not match named hounds/archers.",
-                  "Animation groups reuse static art. They are NOT genuine motion.",
+                  "Animation groups now have distinct procedurally posed preview frames; NOT hand-authored animation.",
                   "Other graphics remain procedural placeholders.",
                   "Hero specialties and hero-class map objects are provisional.",
                   "Schema validation DOES NOT mean VCMI runtime compatibility.",
@@ -383,8 +394,11 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Painted creature concept stills | {painted_concepts['creatures']} (NOT final roster art) |",
         f"| Painted hero portrait concepts | {painted_concepts['heroes']} |",
         f"| Painted Ebonspire scene | {painted_concepts['townScenes']} |",
+        f"| Grouped sprite sheets | {pose_report['spriteSheetCount']} generated (unapproved animation) |",
+        f"| VCMI mapped building overlays | {pose_report['paintedBuildingOverlays']} illustrated prototypes |",
+        f"| Artist-authored animation frames | {pose_report['overallAuthoredAnimationFrames']} |",
         "| Production-quality artwork | NOT DELIVERED |",
-        "| Genuine animation frames | NOT DELIVERED |",
+        "| Genuine authored animation / runtime | NOT YET |",
         "| Production release | BLOCKED |",
         "| Playable Ebonspire town | NOT RUNTIME TESTED |",
         "| Prototype install smoke test | MANUAL WINDOWS QA REQUIRED |",
@@ -398,6 +412,9 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
             if p.is_file():
                 z.write(p, p.relative_to(output))
         for p in (summary_path, output / "validation.json",
+                  output / "missing-assets.json",
+                  output / "sprite-pose-report.json") if procedural else (
+                  summary_path, output / "validation.json",
                   output / "missing-assets.json"):
             z.write(p, p.relative_to(output))
     if require_art and missing:

@@ -52,3 +52,14 @@ Official docs: https://vcmi.eu/modders/Readme/
 - [ ] Test actual Windows VCMI gameplay with screenshots and logs.
 
 **Technical CI PASS ≠ playable or finished art.** Release is deliberately blocked.
+
+## Reproducible animation and sprite-sheet pipeline (prototype v0.2)
+
+- **14 VCMI animation JSON files**, with explicit group coverage and varying generated action poses.
+- **14 actual 6×6 sprite sheets**, one for each creature, stored within the mod archive.
+- **Eight painted building graphics mapped** to selected Ebonspire structure animations. These overlays are not aligned or runtime-verified yet.
+- **New inputs:** `assets-source/creatures-master.webp`, `buildings-master.webp` from the improved transparent PNG cuts.
+- **Automated QA** checks action groups, frame uniqueness and every referenced PNG. Review `SPRITE_ACTION_PREVIEW.png`, `SPRITE_MOTION_PREVIEW.gif`, and `sprite-pose-report.json` in the workflow artifact.
+- **Artist-authored pose override** supported at `assets-source/authored-poses/<creatureKey>/group-XX/*.png`; see [POSES_AND_SPRITESHEETS.md](POSES_AND_SPRITESHEETS.md).
+
+**Quality statement:** These are transformed still-art procedural action previews, **not** individually illustrated movement, attacks, or death animations. The production/release gate remains BLOCKED until hand-authored action work and real VCMI Windows gameplay QA are complete.

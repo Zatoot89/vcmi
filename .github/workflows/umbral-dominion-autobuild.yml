@@ -29,7 +29,7 @@ jobs:
   generate-and-validate:
     name: Generate JSON and development package
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 18
     steps:
       - name: Checkout VCMI fork
         uses: actions/checkout@v4
@@ -51,6 +51,7 @@ jobs:
             --schemas config/schemas \
             "${ARGS[@]}"
           python umbral-dominion/qa/verify_package.py umbral-dominion/build
+          python umbral-dominion/qa/test_sprite_pipeline.py umbral-dominion/build
       - name: Publish validation summary
         if: always()
         shell: bash
@@ -73,5 +74,8 @@ jobs:
             umbral-dominion/build/ASSET_PREVIEW.png
             umbral-dominion/build/ARTWORK_PREVIEW.png
             umbral-dominion/build/artwork-concepts.json
+            umbral-dominion/build/SPRITE_ACTION_PREVIEW.png
+            umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
+            umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn
           retention-days: 30

@@ -47,7 +47,13 @@ with zipfile.ZipFile(archive) as z:
     for creature in ("ASHLING","UMBRALDRAGON","GLOOMHOUND"):
         with Image.open(io.BytesIO(z.read(root+"Content/sprites/UD_"+creature+"_FRAME0.png"))) as img:
             assert img.size==(120,110)
-    print("PAINTED CONCEPT QA: 14 unit stills, 8 portraits, 1 scene — no authentic motion.")
+    print("PAINTED CONCEPT QA: 14 unit stills, 8 portraits, 1 scene — no original artist motion frames.")
+    motion = report["spritePosePipeline"]
+    assert motion["creatures"] == 14 and motion["spriteSheets"] == 14
+    assert motion["buildingOverlays"] == 8
+    assert motion["animationStatus"] == "GENERATED_MOTION_PREVIEW_REQUIRES_AUTHOR_ART"
+    assert (build/"SPRITE_ACTION_PREVIEW.png").is_file()
+    assert (build/"SPRITE_MOTION_PREVIEW.gif").is_file()
     print(f"PASS prototype static QA: {image_count} verified PNGs; "
           f"{len([n for n in names if n.endswith('.json') and '/sprites/' in n])} "
           "animation descriptors; 14 dwellings; 14 creatures; music OGG.")
