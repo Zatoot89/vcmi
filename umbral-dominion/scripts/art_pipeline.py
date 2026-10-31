@@ -186,7 +186,8 @@ def generate_music(mod):
             samples.extend(struct.pack("<h",sample))
         w.writeframes(bytes(samples))
     ogg=folder/"UD_EBON_SPIRE.ogg"
-    subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y","-i",
+    from imageio_ffmpeg import get_ffmpeg_exe
+    subprocess.run([get_ffmpeg_exe(),"-hide_banner","-loglevel","error","-y","-i",
                     str(wav),"-c:a","libvorbis","-q:a","3",str(ogg)],check=True)
     wav.unlink()
     return ogg
