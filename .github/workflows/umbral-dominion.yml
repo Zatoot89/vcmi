@@ -1,0 +1,127 @@
+name: Umbral Dominion - Build Draft
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/umbral-dominion.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate and validate the Ebonspire faction design
+        shell: bash
+        run: |
+          mkdir -p build
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+
+          root = Path("build/umbral-dominion-design")
+          design = root / "design"
+          design.mkdir(parents=True, exist_ok=True)
+
+          tier_data = [
+              ("Ashling", "Cinder Imp", (4, 3, 1, 2, 5, 5, 16), (6, 4, 2, 3, 5, 7, 16), "swarm"),
+              ("Gloom Hound", "Dread Hound", (7, 5, 3, 5, 16, 7, 9), (8, 6, 4, 6, 18, 8, 9), "striker"),
+              ("Veil Archer", "Nightstalker", (8, 6, 4, 6, 24, 5, 7), (9, 7, 5, 7, 26, 6, 7), "ranged"),
+              ("Grave Sentinel", "Doom Sentinel", (9, 12, 6, 9, 40, 5, 4), (11, 14, 7, 10, 45, 6, 4), "tank"),
+              ("Hexbinder", "Soul Weaver", (13, 10, 10, 13, 70, 7, 3), (14, 11, 11, 15, 75, 8, 3), "caster"),
+              ("Dusk Reaver", "Abyssal Reaver", (17, 14, 18, 23, 125, 8, 2), (19, 15, 20, 26, 140, 9, 2), "melee"),
+              ("Umbral Dragon", "Eclipse Dragon", (21, 18, 35, 45, 200, 10, 1), (24, 21, 40, 50, 250, 12, 1), "flyer"),
+          ]
+          def slug(s):
+              parts = s.split()
+              return parts[0].lower() + "".join(w.title() for w in parts[1:])
+
+          creatures = {}
+          for tier, (base, upgraded, bstats, ustats, role) in enumerate(tier_data, 1):
+              for name, stats, is_upgrade in ((base, bstats, False), (upgraded, ustats, True)):
+                  attack, defense, damage_min, damage_max, hp, speed, growth = stats
+                  creatures[slug(name)] = {
+                      "name": name, "tier": tier, "upgraded": is_upgrade, "role": role,
+                      "attack": attack, "defense": defense,
+                      "damage": {"min": damage_min, "max": damage_max},
+                      "hitPoints": hp, "speed": speed, "growth": growth,
+                      "upgradeTo": None if is_upgrade else slug(upgraded),
+                      "implementationStatus": "design only; NOT a VCMI schema object"
+                  }
+          assert len(creatures) == 14
+          for tier in range(1, 8):
+              members = [c for c in creatures.values() if c["tier"] == tier]
+              assert len(members) == 2 and sum(c["upgraded"] for c in members) == 1
+
+          hero_data = [
+              ("Morvane", "Dreadlord", "Shadow Command"),
+              ("Kaedros", "Dreadlord", "Cursed Steel"),
+              ("Tharok", "Dreadlord", "Umbral Vanguard"),
+              ("Elys Vorn", "Dreadlord", "Warden of Night"),
+              ("Seralyth", "Voidcaller", "Hex Mastery"),
+              ("Veyra", "Voidcaller", "Twilight Sorcery"),
+              ("Malachar", "Voidcaller", "Soul Binding"),
+              ("Nyxara", "Voidcaller", "Eclipse Magic"),
+          ]
+          heroes = {slug(name): {
+              "name": name, "class": hero_class, "specialtyConcept": specialty,
+              "implementationStatus": "design only; NOT a VCMI schema object"
+          } for name, hero_class, specialty in hero_data}
+          assert len(heroes) == 8
+          faction = {
+              "name": "Umbral Dominion",
+              "town": "Ebonspire",
+              "nativeTerrain": "subterranean",
+              "heroClasses": ["Dreadlord", "Voidcaller"],
+              "theme": "dark fantasy",
+              "playstyle": "debuffs and heavy melee",
+              "buildings": [
+                  "Fort", "Citadel", "Castle", "Tavern", "Blacksmith",
+                  "Marketplace", "Mage Guild", "Obsidian Reliquary",
+                  "Well of Shadows"
+              ],
+              "tiers": {str(i): [row[0], row[1]] for i, row in enumerate(tier_data, 1)}
+          }
+          for filename, obj in (("creatures.json", creatures), ("heroes.json", heroes), ("faction-design.json", faction)):
+              (design / filename).write_text(json.dumps(obj, indent=2) + "\n", encoding="utf-8")
+
+          (root / "README.md").write_text(
+              "# Umbral Dominion — design build\n\n"
+              "This ZIP is a design artifact generated from GitHub Actions in Zatoot89/vcmi.\n"
+              "It is **not an installable VCMI mod**. It includes 14 creature concepts, "
+              "8 hero concepts, and the Ebonspire town plan.\n\n"
+              "To make the mod playable, create actual VCMI entity JSON files, town "
+              "building and dwelling definitions, and licensed graphical/audio assets. "
+              "Then validate and test the mod using VCMI itself.\n\n"
+              "Official documentation: https://vcmi.eu/modders/Readme/\n",
+              encoding="utf-8"
+          )
+          zip_path = Path("build/umbral-dominion-design.zip")
+          with ZipFile(zip_path, "w", ZIP_DEFLATED) as archive:
+              for path in sorted(root.rglob("*")):
+                  if path.is_file():
+                      archive.write(path, path.relative_to(root))
+          print("Built:", zip_path)
+          print("Validated 7 tiers, 14 creatures, 8 heroes.")
+          summary_path = os.getenv("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as summary:
+                  summary.write("## Umbral Dominion draft build\n\n")
+                  summary.write("Passed: 7 tiers, 14 creatures, 8 heroes.\n\n")
+                  summary.write("Artifact: `umbral-dominion-design` (not playable yet).\n")
+          PY
+      - name: Upload design ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: umbral-dominion-design
+          path: build/umbral-dominion-design.zip
+          if-no-files-found: error
