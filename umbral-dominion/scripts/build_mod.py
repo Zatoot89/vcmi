@@ -88,6 +88,14 @@ def make_creatures(raw):
             entity["upgrades"] = [src["upgradeTo"]]
         if src["role"] == "ranged":
             entity["shots"] = 12
+            entity["graphics"]["missile"] = {
+                "animation": "UD_VOID_ARROW.json",
+                "attackClimaxFrame": 3,
+                "offset": {"upperX": 70, "upperY": 44,
+                           "middleX": 88, "middleY": 75,
+                           "lowerX": 86, "lowerY": 100},
+                "frameAngles": [-90, -45, 0, 45, 90],
+            }
         if level == 7:
             entity["doubleWide"] = True
         result[key] = entity
@@ -254,7 +262,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     manifest = {
         "name": "Umbral Dominion (original-art prototype)",
         "description": "Procedurally illustrated alpha preview. Requires Windows VCMI gameplay QA.",
-        "version": "0.2.0-alpha",
+        "version": "0.3.0-alpha",
         "author": "Zatoot89",
         "contact": "https://github.com/Zatoot89/vcmi",
         "modType": "Town",
@@ -356,6 +364,10 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
             "spriteSheets": pose_report["spriteSheetCount"],
             "buildingOverlays": pose_report["paintedBuildingOverlays"],
             "artistAuthoredAnimationFrames": pose_report["overallAuthoredAnimationFrames"],
+            "illustratedKeyPoseCreatures": pose_report["illustratedKeyPoseCreatureCount"],
+            "illustratedKeyPoseCount": pose_report["illustratedKeyPoseCount"],
+            "keyPoseMethod": pose_report["keyPoseMethod"],
+            "rangedMissile": pose_report["rangedMissile"],
             "animationStatus": "GENERATED_MOTION_PREVIEW_REQUIRES_AUTHOR_ART",
         },
         "productionArtComplete": False,
@@ -396,7 +408,9 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Painted Ebonspire scene | {painted_concepts['townScenes']} |",
         f"| Grouped sprite sheets | {pose_report['spriteSheetCount']} generated (unapproved animation) |",
         f"| VCMI mapped building overlays | {pose_report['paintedBuildingOverlays']} illustrated prototypes |",
+        f"| Distinct AI-illustrated key poses | {pose_report['illustratedKeyPoseCount']} (4 creatures) |",
         f"| Artist-authored animation frames | {pose_report['overallAuthoredAnimationFrames']} |",
+        "| Windows install smoke | Separate Windows Actions job; not gameplay |",
         "| Production-quality artwork | NOT DELIVERED |",
         "| Genuine authored animation / runtime | NOT YET |",
         "| Production release | BLOCKED |",

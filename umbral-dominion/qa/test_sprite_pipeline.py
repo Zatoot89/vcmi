@@ -20,17 +20,33 @@ def check(build_dir):
     assert report['spriteSheetCount']==14
     assert report['paintedBuildingOverlays']==8
     assert report['releaseApproved'] is False
+    assert report['illustratedKeyPoseCreatureCount']==4
+    assert report['illustratedKeyPoseCount']==16
+    assert report['keyPoseMethod'].startswith('AI_ILLUSTRATED_')
+    assert report['rangedMissile']['directions']==5
+    for key in ('gloomHound','dreadHound','veilArcher','nightstalker'):
+        unit=next(x for x in report['creatures'] if x['id']==key)
+        assert unit['illustratedKeyPoseCount']==4, key
+        assert len(set(unit['illustratedKeyPoseHashes'].values()))==4, key
+        assert unit['illustratedKeyPoseApproved'] is False
     assert report['engineVerified'] is False
     assert report['overallAuthoredAnimationFrames']==sum(x['authoredActionFrames'] for x in report['creatures'])
     for item in report['creatures']:
         assert item['uniqueFrameHashes']>=20, item['id']
         assert item['frames']>=75, item['id']
+    with Image.open(path/'KEYPOSE_APPROVAL_SHEET.png') as im:
+        assert im.size==(880,810)
     with Image.open(path/'SPRITE_ACTION_PREVIEW.png') as im:
         assert im.size==(1120,1805)
     archive=path/'umbral-dominion-dev-DRAFT.zip'
     with zipfile.ZipFile(archive) as z:
         names=set(z.namelist())
         prefix='Mods/umbralDominion/Content/sprites/'
+        assert prefix+'UD_VOID_ARROW.json' in names
+        arrows=json.loads(z.read(prefix+'UD_VOID_ARROW.json'))
+        assert len(arrows['sequences'][0]['frames'])==5
+        for fn in arrows['sequences'][0]['frames']:
+            assert prefix+fn in names
         for name in NAMES:
             key='UD_'+name.upper()
             animation=prefix+key+'.json'
@@ -62,7 +78,8 @@ def check(build_dir):
         assert 'Mods/umbralDominion/Content/Music/UD_EBON_SPIRE.ogg' in names
     print('PASS: 14 structured sprite sheets, 14 VCMI JSON animation descriptors, 8 illustrated structures')
     print('PASS: required action groups, non-identical frames, alpha spritesheet format, archive assets')
-    print('NOT PASSED: production artwork, authored animations, Windows loading/gameplay QA (not tested)')
+    print('PASS: 16 distinct illustrated key poses assigned to 4 units; source hash/animation traceability')
+    print('NOT PASSED: full authored animation, art approval, VCMI gameplay (not tested)')
 
 if __name__=='__main__':
     cli=argparse.ArgumentParser()

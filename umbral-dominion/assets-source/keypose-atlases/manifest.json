@@ -1,0 +1,36 @@
+{
+  "status": "AI_ILLUSTRATED_SOURCE_KEYPOSES_NOT_COMPLETE_COMBAT_ANIMATION",
+  "images": [
+    {
+      "filename": "hounds.webp",
+      "rows": [
+        "gloomHound",
+        "dreadHound"
+      ],
+      "columns": [
+        "idle",
+        "move",
+        "attack",
+        "hit"
+      ]
+    },
+    {
+      "filename": "archers.webp",
+      "rows": [
+        "veilArcher",
+        "nightstalker"
+      ],
+      "columns": [
+        "idle",
+        "move",
+        "shoot",
+        "hit"
+      ]
+    }
+  ],
+  "keyPoseCount": 16,
+  "creatureCount": 4,
+  "generationMethod": "AI generated separate poses + synthetic interpolated motion",
+  "humanIllustratedFrameCount": 0,
+  "gameplayVerified": false
+}

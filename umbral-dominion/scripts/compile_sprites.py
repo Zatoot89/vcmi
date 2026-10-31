@@ -32,6 +32,11 @@ NEW_BUILDINGS={
 ARCHER={'veilArcher','nightstalker'}
 MAGE={'hexbinder','soulWeaver'}
 DRAGON={'umbralDragon','eclipseDragon'}
+KEYPOSE_MASTER={
+ 'gloomHound':('hounds.webp',0), 'dreadHound':('hounds.webp',1),
+ 'veilArcher':('archers.webp',0), 'nightstalker':('archers.webp',1),
+}
+KEYPOSE_ACTIONS=('idle','move','attack','hit')
 
 
 def crop_alpha(image):
@@ -72,6 +77,80 @@ def load_exact_masters():
                 raise ValueError(f'{name}: expected alpha channel')
             atlases[name]=src.convert('RGBA')
     return atlases
+
+
+
+def load_keypose_sources():
+    """Four AI-illustrated, semantically distinct poses for each of four units.
+
+    Source frames are not hand-drawn animation. Generated interpolation between
+    source key poses must remain marked NON-AUTHORED in all reports.
+    """
+    from PIL import ImageStat
+    result={}
+    for key,(atlas_name,row) in KEYPOSE_MASTER.items():
+        path=SRC/'keypose-atlases'/atlas_name
+        if not path.is_file():
+            raise FileNotFoundError(f'Missing key-pose artwork for {key}: {path}')
+        with Image.open(path) as source:
+            atlas=source.convert('RGBA')
+            if atlas.size!=(1774,887):
+                raise ValueError(f'{atlas_name}: expected 1774x887, got {atlas.size}')
+            cells={}
+            pixel_hashes=[]
+            for col,kind in enumerate(KEYPOSE_ACTIONS):
+                w,h=atlas.size
+                cell=atlas.crop((col*w//4,row*h//2,(col+1)*w//4,(row+1)*h//2))
+                alpha=cell.getchannel('A')
+                box=alpha.getbbox()
+                if not box or max(alpha.getextrema())<230 or alpha.getbbox()[2]-alpha.getbbox()[0]<100:
+                    raise ValueError(f'{key}/{kind}: invalid or blank artwork')
+                frame=fit(cell,CANVAS,margin=8)
+                # Image bytes are compared rather than PNG metadata so a duplicate
+                # static frame cannot masquerade as a different action drawing.
+                sig=hashlib.sha256(frame.tobytes()).hexdigest()
+                if sig in pixel_hashes:
+                    raise ValueError(f'{key}: duplicate key-pose artwork {kind}')
+                pixel_hashes.append(sig)
+                cells[kind]=frame
+            result[key]={'poses':cells,'sourceFile':atlas_name,
+                         'keyPoseChecksums':dict(zip(KEYPOSE_ACTIONS,pixel_hashes)),
+                         'origin':'AI_GENERATED_DISTINCT_KEYPOSE_ILLUSTRATIONS',
+                         'runtimeApproved':False}
+    return result
+
+
+def render_keypose_action(poses, action, frame, count):
+    """Timeline from illustrated keyposes plus generated in-betweens (not authored animation)."""
+    idle=poses['idle']
+    t=frame/max(1,count-1)
+    target=poses['move'] if action in ('move','start','end') else (
+           poses['attack'] if action in ('attack','shoot','cast') else (
+           poses['hit'] if action in ('hit','defend','death','dead','resurrection') else idle))
+    if action in ('move','attack','shoot','cast'):
+        # The illustrated action pose is the middle keyframe. All other frames
+        # are generated crossfades, never falsely counted as drawn keyframes.
+        amount=max(0.,1.-abs(2*t-1.))
+    elif action in ('hit','defend','death'):
+        amount=min(1.,t*2) if action=='death' else max(0.,1.-abs(2*t-1.))
+    elif action=='dead':
+        amount=1.
+    elif action=='resurrection':
+        amount=max(0.,1.-t)
+    elif action=='start':
+        amount=t
+    elif action=='end':
+        amount=1.-t
+    elif action in ('turn',):
+        return pose(idle,'AI_KEYPOSE','turn',frame,count)
+    else:
+        return pose(idle,'AI_KEYPOSE','idle',frame,count)
+    blended=Image.blend(idle,target,amount)
+    if action in ('death','dead'):
+        # Even this final pose is generated, not a separate death illustration.
+        return pose(blended,'AI_KEYPOSE','death',frame,count)
+    # Do not add fake weapon overlays to the actual illustrated bow/arrow frames.
+    return blended
 
 
 def pose(base, key, action, index, n):
@@ -169,12 +248,13 @@ def groups_for(key):
     return groups
 
 
-def render_animation(source, key, dest, sheet_folder):
+def render_animation(source, key, dest, sheet_folder, keypose_data=None):
     prefix='UD_'+key.upper()
     role='archer' if key in ARCHER else ('mage' if key in MAGE else 'dragon' if key in DRAGON else 'melee')
     base=fit(source,CANVAS,margin=18)
     sequences=[];hashes={};cache={};action_names=[];authored_count=0;authored_groups=[]
     group_map=groups_for(key)
+    illustrated_pose_count=len(keypose_data['poses']) if keypose_data else 0
     for group,(action,count) in sorted(group_map.items()):
         authored_dir=SRC/'authored-poses'/key/f'group-{group:02d}'
         artwork_files=sorted(authored_dir.glob('*.png')) if authored_dir.is_dir() else []
@@ -198,6 +278,8 @@ def render_animation(source, key, dest, sheet_folder):
             if artwork_files:
                 with Image.open(artwork_files[frame]) as authored:
                     im=fit(authored,CANVAS,margin=2)
+            elif keypose_data:
+                im=render_keypose_action(keypose_data['poses'],actual,index,tcount)
             else:
                 im=pose(base,key,actual,index,tcount)
             if not artwork_files and action in ('turn','shoot','attack','cast') and group in (11,14,17,30,40):
@@ -232,7 +314,11 @@ def render_animation(source, key, dest, sheet_folder):
             'uniqueFrameHashes':len(set(hashes.values())),'sheet':sheet_file.name,
             'authoredActionFrames':authored_count,'authoredGroups':authored_groups,
             'poseMethod':'AUTHORED_SOURCE_OVERRIDE_PLUS_GENERATED_FALLBACK' if authored_count else 'PROCEDURAL_IMAGE_TRANSFORM_AND_EFFECTS',
-            'source':'IMPROVED_ISOLATED_ART' if key in NEW_CREATURES else 'PAINTED_CONCEPT_ATLAS'}
+            'source':'ILLUSTRATED_FOUR_KEYPOSE_ATLAS' if keypose_data else ('IMPROVED_ISOLATED_ART' if key in NEW_CREATURES else 'PAINTED_CONCEPT_ATLAS'),
+            'illustratedKeyPoseCount':illustrated_pose_count,
+            'illustratedKeyPoseHashes':keypose_data['keyPoseChecksums'] if keypose_data else {},
+            'illustrationOrigin':keypose_data['origin'] if keypose_data else 'LEGACY_PAINTED_STILL',
+            'illustratedKeyPoseApproved':False}
 
 
 def preview_sheet(sheets, output):
@@ -253,12 +339,53 @@ def preview_sheet(sheets, output):
     canvas.save(output,optimize=True)
 
 
+def generate_void_arrow_projectile(dest):
+    """Minimal original placeholder for archers; orientation still requires VCMI QA."""
+    angles=(-90,-45,0,45,90)
+    frames=[]
+    for index,angle in enumerate(angles):
+        img=Image.new('RGBA',(64,64))
+        d=ImageDraw.Draw(img,'RGBA')
+        d.line((10,32,47,32), fill=(174,99,242,245),width=4)
+        d.line((7,32,52,32), fill=(220,173,255,250),width=2)
+        d.polygon(((56,32),(43,24),(45,32),(43,40)),fill=(225,132,255,255))
+        d.line((14,32,4,27), fill=(144,77,214,210),width=2)
+        d.line((14,32,4,37), fill=(144,77,214,210),width=2)
+        img=img.rotate(angle,Image.Resampling.BICUBIC,expand=False)
+        name=f'UD_VOID_ARROW_{index}.png'
+        img.save(dest/name,optimize=True)
+        frames.append(name)
+    (dest/'UD_VOID_ARROW.json').write_text(json.dumps({'sequences':[{'group':0,'frames':frames}]},indent=2)+'\n',encoding='utf-8')
+    return {'animation':'UD_VOID_ARROW.json','directions':len(angles),'gameVerified':False,
+            'artworkStatus':'PROCEDURAL_PROJECTILE_PLACEHOLDER'}
+
+
+def source_keypose_preview(sources, output):
+    """Visible gate for checking actual source character poses before release."""
+    image=Image.new('RGB',(880,810),(23,15,36))
+    d=ImageDraw.Draw(image)
+    d.text((18,10),'UMBRAL DOMINION — DISTINCT ILLUSTRATED SOURCE POSES',fill=(235,205,252))
+    d.text((18,30),'4 units × 4 AI-generated key poses • generated in-between motion is NOT authored',fill=(199,166,225))
+    d.text((175,53),'IDLE',fill=(228,194,255))
+    d.text((370,53),'MOVE',fill=(228,194,255))
+    d.text((557,53),'ATTACK / SHOOT',fill=(228,194,255))
+    d.text((775,53),'HIT',fill=(228,194,255))
+    for row,key in enumerate(NEW_CREATURES):
+        d.text((7,row*185+139),key,fill=(217,181,240))
+        for col,action in enumerate(KEYPOSE_ACTIONS):
+            pose=sources[key]['poses'][action]
+            image.paste(pose,(155+col*178,74+row*182),pose)
+    image.save(output,optimize=True)
+
+
 def generate_pose_sheets(generated_dir, build_dir):
     dest=Path(generated_dir); build=Path(build_dir)
     atlases=load_exact_masters()
     creature_atlas=atlases['creatures-master.webp']
     building_atlas=atlases['buildings-master.webp']
     built=[];sheets=[]
+    keypose_sources=load_keypose_sources()
+    source_keypose_preview(keypose_sources,build/"KEYPOSE_APPROVAL_SHEET.png")
     for idx,key in enumerate(ALL_CREATURES):
         prefix='UD_'+key.upper()
         if key in NEW_CREATURES:
@@ -273,7 +400,7 @@ def generate_pose_sheets(generated_dir, build_dir):
             still=dest/(prefix+'_FRAME0.png')
             if not still.exists():raise FileNotFoundError('Expected concept still for '+key)
             with Image.open(still) as im:source=crop_alpha(im)
-        result=render_animation(source,key,dest,build)
+        result=render_animation(source,key,dest,build,keypose_sources.get(key))
         built.append(result)
         sheets.append((key,build/result['sheet']))
     buildings=[]
@@ -287,6 +414,7 @@ def generate_pose_sheets(generated_dir, build_dir):
             pic.save(dest/(prefix+str(j)+'.png'),optimize=True)
         buildings.append({'source':name,'townStructure':building_key,
                           'animationFrames':2,'role':'ILLUSTRATED_CONCEPT_OVERLAY_NOT_LAYOUT_APPROVED'})
+    projectile=generate_void_arrow_projectile(dest)
     preview_sheet(sheets,build/'SPRITE_ACTION_PREVIEW.png')
     # Animated gallery of four improved units. This is a preview of generated
     # motion, not evidence of genuine hand-animated battle sprites.
@@ -308,9 +436,14 @@ def generate_pose_sheets(generated_dir, build_dir):
             'creatureCount':len(built),'spriteSheetCount':len(built),
             'buildings':buildings,'paintedBuildingOverlays':len(buildings),
             'overallAuthoredAnimationFrames':sum(x['authoredActionFrames'] for x in built),
+            'illustratedKeyPoseCreatureCount':len(keypose_sources),
+            'illustratedKeyPoseCount':sum(x['illustratedKeyPoseCount'] for x in built),
+            'keyPoseMethod':'AI_ILLUSTRATED_KEYPOSES_WITH_GENERATED_INTERPOLATION_NOT_HAND_ANIMATED',
+            'rangedMissile':projectile,
             'engineVerified':False,'windowsRuntimeTested':False,
             'releaseApproved':False,
-            'caveats':['Fallback poses generated by geometric transforms/FX of stills; NOT frame-by-frame authored.',
+            'caveats':['Illustrated key-pose atlases provide 4 visually distinct source poses for each of 4 units; in-between frames are generated, NOT authored.',
+                       'Fallback poses generated by geometric transforms/FX of stills; NOT frame-by-frame authored.',
                        'Animation groups technically present; actual in-game transitions unverified.',
                        '8 painted building image overlays provisional: town-screen alignment unverified.',
                        'The 10 other creatures need original action-specific keyframes.']}

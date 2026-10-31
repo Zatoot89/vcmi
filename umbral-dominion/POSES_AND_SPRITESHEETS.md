@@ -31,3 +31,14 @@ The pipeline also substitutes eight building illustrations for their matching `U
 The CI audit checks file counts, actual distinct PNG bytes, required combat group IDs, transparent format, sprite sheet shape, exact VCMI JSON references, and eight town overlay mappings. It does **not** approve a mod merely because files exist. Generated pose motion consists of transformations and effects of painted still art, **not** true independently illustrated motion frames, and cannot pass the artistic release gate. The release gate remains blocked until the art is approved and tested on Windows VCMI.
 
 Reference: https://vcmi.eu/modders/Animation_Format/ and https://vcmi.eu/modders/Entities_Format/Creature_Format/ .
+## Milestone 0.3 — four AI-illustrated action-pose sets and Windows installation QA
+
+- Source: `assets-source/keypose-atlases/hounds.webp` and `archers.webp`, both original generated transparent 2×4 illustration atlases.
+- Units: Gloom Hound, Dread Hound, Veil Archer and Nightstalker. Each has four **distinct illustrated source poses**: idle, move, attack/shoot, hit (16 total).
+- The build extracts source key poses, interpolates intermediate action frames, creates 14 sprite sheets and overwrites group descriptors. This is **AI-illustrated keyframe material plus synthetic motion**, not fully artist-animated movement.
+- Ranged units now have a directional `UD_VOID_ARROW.json` projectile with five PNG directions. Timing/offset remain unverified without a VCMI game.
+- `KEYPOSE_APPROVAL_SHEET.png` is the new QA visual artifact. `sprite-pose-report.json` records source image checksums and distinguishes these source poses from manually authored `authored-poses` overrides.
+- A second GitHub Actions job runs **on Windows** with no Heroes III assets. It extracts/installs the generated ZIP in an isolated directory, checks required graphics and creates an upgrade backup on second installation.
+- **Release remains blocked**: 10 creatures still have generated poses based on single painted stills; these four units lack fully illustrated action sequences; town-screen structures and gameplay remain untested.
+
+The Windows CI smoke test is **not** a gameplay or launch test. Full acceptance still requires a user-controlled PC with VCMI and legitimate Heroes III resources.

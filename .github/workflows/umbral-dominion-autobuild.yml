@@ -75,7 +75,46 @@ jobs:
             umbral-dominion/build/ARTWORK_PREVIEW.png
             umbral-dominion/build/artwork-concepts.json
             umbral-dominion/build/SPRITE_ACTION_PREVIEW.png
+            umbral-dominion/build/KEYPOSE_APPROVAL_SHEET.png
             umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
             umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn
           retention-days: 30
+
+  windows-install-smoke:
+    name: Windows ZIP and installer smoke test (no game data)
+    needs: [generate-and-validate]
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout installer script
+        uses: actions/checkout@v4
+      - name: Download verified alpha archive
+        uses: actions/download-artifact@v4
+        with:
+          name: umbral-dominion-windows-DRAFT
+          path: ${{ runner.temp }}/umbral-alpha-artifact
+      - name: Dry-run install, asset check and upgrade backup
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'umbral-alpha-artifact/umbral-dominion-dev-DRAFT.zip'
+          if (-not (Test-Path -LiteralPath $archive)) { throw 'Missing GitHub-built mod ZIP' }
+          $dest = Join-Path $env:RUNNER_TEMP 'vcmi-alpha-sandbox'
+          & './umbral-dominion/scripts/install_windows.ps1' -Archive $archive -VcmiDataDir $dest
+          $mod = Join-Path $dest 'Mods/umbralDominion'
+          foreach ($path in @('mod.json','Content/config/creatures.json',
+             'Content/config/faction.json','Content/sprites/UD_VEILARCHER.json',
+             'Content/sprites/UD_NIGHTSTALKER.json',
+             'Content/sprites/UD_VOID_ARROW.json','Content/Music/UD_EBON_SPIRE.ogg')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $mod $path))) {
+              throw "Missing installed mod asset $path"
+            }
+          }
+          $meta = Get-Content -LiteralPath (Join-Path $mod 'mod.json') -Raw | ConvertFrom-Json
+          if ($meta.version -ne '0.3.0-alpha') { throw "Unexpected mod version: $($meta.version)" }
+          & './umbral-dominion/scripts/install_windows.ps1' -Archive $archive -VcmiDataDir $dest
+          $backups = @(Get-ChildItem -LiteralPath (Join-Path $dest 'Mods') -Directory |
+             Where-Object { $_.Name -like 'umbralDominion-backup-*' })
+          if ($backups.Count -ne 1) { throw "Installer backup smoke failed: $($backups.Count)" }
+          'PASS: Windows ZIP extraction, mod layout, projectile, archive install and upgrade backup. GAMEPLAY NOT TESTED.' |
+            Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
