@@ -21,6 +21,8 @@ def seed(name):
     return int.from_bytes(hashlib.sha256(name.encode()).digest()[:8],"big")
 def canvas(name, frame=0):
     upper=name.upper()
+    if "CREATURE_BG_120" in upper: return (120,100)
+    if "CREATURE_BG_130" in upper: return (130,100)
     if "TOWN_BACKGROUND" in upper: return (800,374)
     if "HALL_BACKGROUND" in upper: return (800,374)
     if "GUILD_BACKGROUND" in upper: return (640,450)
@@ -188,3 +190,36 @@ def generate_music(mod):
                     str(wav),"-c:a","libvorbis","-q:a","3",str(ogg)],check=True)
     wav.unlink()
     return ogg
+
+
+def make_preview(asset_dir, output):
+    """Contact sheet for reviewers; does not claim in-game rendering."""
+    asset_dir=Path(asset_dir)
+    output=Path(output)
+    poster=Image.new("RGB",(1040,1010),(18,13,33))
+    d=ImageDraw.Draw(poster)
+    d.text((24,17),"UMBRAL DOMINION — EBONSPIRE",fill=(237,205,255))
+    d.text((25,40),"Original procedural prototype • NOT a gameplay screenshot",fill=(179,146,207))
+    bg=asset_dir/"UD_TOWN_BACKGROUND.png"
+    if bg.exists():
+        with Image.open(bg) as img:
+            enlarged=img.convert("RGBA").resize((992,460),Image.Resampling.LANCZOS)
+            poster.paste(enlarged,(24,69),enlarged)
+    roster=["ASHLING","CINDERIMP","GLOOMHOUND","DREADHOUND",
+            "VEILARCHER","NIGHTSTALKER","GRAVESENTINEL","DOOMSENTINEL",
+            "HEXBINDER","SOULWEAVER","DUSKREAVER","ABYSSALREAVER",
+            "UMBRALDRAGON","ECLIPSEDRAGON"]
+    for idx,name in enumerate(roster):
+        row,col=divmod(idx,7)
+        x=24+col*145
+        y=548+row*205
+        pic=asset_dir/("UD_"+name+"_FRAME0.png")
+        if pic.exists():
+            with Image.open(pic) as im:
+                img=im.convert("RGBA")
+                poster.paste(img,(x,y),img)
+        d.text((x,y+133),name[:17],fill=(217,192,231))
+    d.text((24,978),"Asset previews only — please test with VCMI on Windows",fill=(186,161,209))
+    output.parent.mkdir(parents=True,exist_ok=True)
+    poster.save(output,optimize=True)
+    return output

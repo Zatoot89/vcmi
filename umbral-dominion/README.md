@@ -23,3 +23,7 @@ Official docs: https://vcmi.eu/modders/Readme/
 - [ ] Test maps, sieges, Mage Guild, tavern heroes, and special buildings.
 - [ ] Capture VCMI logs/screenshots and PASS/FAIL evidence from the Windows installation.
 - [ ] Run the GitHub workflow with `strict_assets=true` and ship only after all runtime checks pass.
+
+## Generated graphics and installing on Windows
+
+The build now generates original geometric/procedural PNG graphics and VCMI JSON animation descriptors plus a composed OGG theme. They are **placeholder art** for prototyping, not finished faction illustrations. An artifact preview `ASSET_PREVIEW.png` shows the generated look. See [WINDOWS_QA.md](WINDOWS_QA.md) for game tests, or install the draft with `scripts/install_windows.ps1` after downloading the CI ZIP. Runtime compatibility is still unverified.

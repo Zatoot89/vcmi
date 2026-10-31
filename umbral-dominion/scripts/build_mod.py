@@ -10,7 +10,7 @@ import shutil
 import sys
 import zipfile
 from collections import Counter
-from art_pipeline import generate_assets, generate_music
+from art_pipeline import generate_assets, generate_music, make_preview
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -290,6 +290,8 @@ def build(schema_dir, output, require_art=False, procedural=True):
     expected = sorted(set(a["filename"] for a in assets))
     generated_dir = output / "generated-assets"
     generated = generate_assets(expected, generated_dir) if procedural else {"covered": 0, "generated": 0}
+    if procedural:
+        make_preview(generated_dir, output / "ASSET_PREVIEW.png")
     supplied_dir = ROOT / "assets"
     # Animations are modern VCMI JSON; individual frames are PNG.
     for source in sorted(generated_dir.glob("*")) if procedural else []:
