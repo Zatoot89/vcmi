@@ -31,7 +31,7 @@ Official docs: https://vcmi.eu/modders/Readme/
 ## Release status — BLOCKED
 
 - GitHub Actions green means **JSON structure and archive packaging pass only**.
-- Some images are now original **AI-painted concept studies**; unfinished assets are still procedural placeholders. Tier-2 art depicts skeletons rather than named hounds, and tier-3 art depicts wraiths rather than named archers. The concepts are not roster-approved.
+- Some images are now original **AI-painted concept studies**; unfinished assets are still procedural placeholders. Tier-2 now depicts painted quadruped hounds (basic/upgraded color studies); tier-3 has humanoid skeleton studies without accurate ranged equipment and remains unapproved. The concepts are not roster-approved.
 - The 14 creatures require **distinct approved visual designs and individually authored motion frames**; mirrored or slightly shifted still images do not count.
 - Eight heroes need finished portraits and specialities; Ebonspire needs a professionally illustrated town, buildings, town map and screens.
 - Gameplay on **Windows VCMI has not been tested**.
@@ -45,7 +45,8 @@ Official docs: https://vcmi.eu/modders/Readme/
 - [x] 14 cropped painted creature stills loaded via `assets-source/creature-concepts.png`.
 - [x] 8 painted hero portrait studies loaded via `assets-source/hero-portraits.png`.
 - [x] GitHub Actions build and static archive QA **PASS** ([run #41231372364](https://github.com/Zatoot89/vcmi/actions/runs/41231372364)).
-- [ ] Correct T2 hound and T3 archer artwork and get visual approval for every unit.
+- [x] Replace the mismatched T2 skeleton concepts with painted dark hound studies.
+- [ ] Author separate upgraded hound design and real T3 archer/nightstalker art; obtain visual approval for every unit.
 - [ ] Produce 14 genuine, individually authored battle animations; static frames aren't movement.
 - [ ] Produce 36 aligned building overlays, map-town animations, siege/puzzle/UI graphics.
 - [ ] Test actual Windows VCMI gameplay with screenshots and logs.

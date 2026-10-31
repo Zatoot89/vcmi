@@ -26,8 +26,8 @@ def apply_painted_concepts(generated_dir,build_dir):
     stats={'creatures':0,'heroes':0,'townScenes':0,'approvedCharacterDesigns':0,
            'genuineAnimationSequences':0,
            'status':'PAINTED_ART_DIRECTION_CONCEPTS_NOT_PRODUCTION_SPRITES',
-           'problems':['T2 figures resemble skeleton warriors rather than named hounds',
-                       'T3 figures resemble wraiths rather than named archers',
+           'problems':['T2 painted quadruped wolf studies are concept-only; base and upgraded color variants need independent illustration',
+                       'T3 studies are skeleton warriors with incorrect swords/shields; actual ranged archer designs must be painted',
                        'Single illustrated still per creature: actions/flight/walk/death unanimated'],
            'sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
     with Image.open(files[0]) as src:
