@@ -63,3 +63,13 @@ Official docs: https://vcmi.eu/modders/Readme/
 - **Artist-authored pose override** supported at `assets-source/authored-poses/<creatureKey>/group-XX/*.png`; see [POSES_AND_SPRITESHEETS.md](POSES_AND_SPRITESHEETS.md).
 
 **Quality statement:** These are transformed still-art procedural action previews, **not** individually illustrated movement, attacks, or death animations. The production/release gate remains BLOCKED until hand-authored action work and real VCMI Windows gameplay QA are complete.
+
+## v0.4 Alpha — automated readiness gate (1 November 2026)
+
+The pipeline now generates four **derived** pose studies for each of the ten creatures that had only one painted still. These forty transformations must not be counted as separate illustrated key poses. The four previously illustrated creatures still contribute sixteen distinct AI-illustrated source poses; there are **zero fully artist-authored combat animation sets**.
+
+All thirty-six town structure graphics have painted-source derivatives from **eight** distinct original building illustrations. This does not mean thirty-six original buildings have been painted. The automated layout review flagged **15 structures with content extending beyond the 800×374 town review canvas**; this is a placement QA queue, not proof of in-game errors.
+
+Automated QA run [#41240677938](https://github.com/Zatoot89/vcmi/actions/runs/41240677938) passed JSON, source-art provenance, sprite sheets, archive integrity, and isolated Windows ZIP installation/reinstallation checks. **Actual VCMI gameplay, town placement, clickable regions, creature recruitment, attacks and deaths are not runtime verified.** The release gate remains blocked.
+
+The Windows development artifact includes `DERIVED_POSE_REVIEW.png`, `TOWN_STRUCTURE_REVIEW.png`, `TOWN_LAYOUT_DIAGNOSTIC.png`, `town-art-report.json`, and `sprite-pose-report.json` for inspection.

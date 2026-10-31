@@ -31,3 +31,13 @@ A single installable VCMI package with 14 distinct creature designs and animatio
 The `assets-source/` folder contains original AI-painted concept atlases, and `apply_concept_art.py` crops these into the build. The updated [GitHub Actions build](https://github.com/Zatoot89/vcmi/actions/runs/41231372364) passes JSON/package validation, not gameplay. It reports 14 creature stills, eight portrait studies and one painted background. **Zero** actual animation sequences are approved, and Windows runtime testing is still outstanding.
 
 **Known invalid creature mappings:** Gloom Hound / Dread Hound now have painted four-legged wolf concepts but need independently drawn upgrades and animation. Veil Archer / Nightstalker still have skeleton warrior studies with wrong weapons; proper bow-wielding designs must be painted. Please don't treat image file counts or repeated still frames as completion.
+
+## v0.4 independent art provenance audit
+
+- 4 creatures × 4 AI-illustrated source poses = **16** key pose studies (still require quality approval and authored transitions).
+- 10 other creatures × 4 computer-derived transformations = **40** non-illustrated pose studies. **0** newly independently illustrated poses for these ten.
+- 36 town image overlays are variants of **8 original architectural concept paintings**. **0** independently illustrated additional buildings.
+- 15 town overlay placements extend beyond the configured 800×374 review canvas. Some may be intentional; inspect individually in actual VCMI.
+- A distinct `qa/test_art_readiness.py` file verifies provenance and prevents a successful packaging build from falsely claiming complete artwork.
+- Latest full Linux + Windows installation smoke PASS: [run #41240677938](https://github.com/Zatoot89/vcmi/actions/runs/41240677938).
+- **Production release: BLOCKED.** Windows installation QA is not game-runtime QA.
