@@ -445,6 +445,10 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     ]
     summary_path = output / "BUILD_REPORT.md"
     summary_path.write_text("\n".join(summary) + "\n", encoding="utf-8")
+    # Keep design-source audit evidence inside build directory for ZIP-relative paths.
+    if procedural:
+        shutil.copy2(ROOT / "design" / "town-layout-corrections.json",
+                     output / "town-layout-corrections.json")
     zipname = output / "umbral-dominion-dev-DRAFT.zip"
     with zipfile.ZipFile(zipname, "w", zipfile.ZIP_DEFLATED) as z:
         for p in sorted(mod.rglob("*")):
@@ -454,7 +458,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
                   output / "missing-assets.json",
                   output / "sprite-pose-report.json",
                   output / "town-art-report.json",
-                  ROOT / "design" / "town-layout-corrections.json") if procedural else (
+                  output / "town-layout-corrections.json") if procedural else (
                   summary_path, output / "validation.json",
                   output / "missing-assets.json"):
             z.write(p, p.relative_to(output))
