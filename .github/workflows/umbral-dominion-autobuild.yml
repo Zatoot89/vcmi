@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: umbral-dominion-\${{ github.ref }}
+  group: umbral-dominion-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -42,12 +42,12 @@ jobs:
         run: |
           set -euo pipefail
           ARGS=()
-          if [[ "\${{ inputs.strict_assets || 'false' }}" == "true" ]]; then
+          if [[ "${{ inputs.strict_assets || 'false' }}" == "true" ]]; then
             ARGS+=(--strict-assets)
           fi
           python umbral-dominion/scripts/build_mod.py \
             --schemas config/schemas \
-            "\${ARGS[@]}"
+            "${ARGS[@]}"
       - name: Publish validation summary
         if: always()
         shell: bash
