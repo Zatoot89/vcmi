@@ -13,6 +13,7 @@ from collections import Counter
 from art_pipeline import generate_assets, generate_music, make_preview
 from apply_concept_art import apply_painted_concepts
 from compile_sprites import generate_pose_sheets
+from town_visuals import build_town_visuals
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -262,7 +263,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
     manifest = {
         "name": "Umbral Dominion (original-art prototype)",
         "description": "Procedurally illustrated alpha preview. Requires Windows VCMI gameplay QA.",
-        "version": "0.3.0-alpha",
+        "version": "0.4.0-alpha",
         "author": "Zatoot89",
         "contact": "https://github.com/Zatoot89/vcmi",
         "modType": "Town",
@@ -304,9 +305,13 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         make_preview(generated_dir, output / "ASSET_PREVIEW.png")
         painted_concepts = apply_painted_concepts(generated_dir, output)
         pose_report = generate_pose_sheets(generated_dir, output)
+        town_art_report = build_town_visuals(generated_dir, output, town)
     else:
         pose_report = {"creatureCount": 0, "spriteSheetCount": 0, "paintedBuildingOverlays": 0,
-                       "overallAuthoredAnimationFrames": 0}
+                       "overallAuthoredAnimationFrames": 0, "derivedPoseCount":0,
+                       "derivedPoseCreatureCount":0}
+        town_art_report = {"townStructures":0,"sourcePaintings":0,
+                           "illustratedIndependently":0,"placementClippingCount":0}
         painted_concepts = {"creatures": 0, "heroes": 0, "townScenes": 0,
                             "approvedCharacterDesigns": 0, "genuineAnimationSequences": 0}
     supplied_dir = ROOT / "assets"
@@ -359,6 +364,20 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "musicCreated": music_file is not None,
         "visualPlaceholderCount": placeholder_count,
         "paintedConceptArt": painted_concepts,
+        "artReadiness": {
+            "status": "BLOCKED",
+            "genuineKeyPoseSourceUnits": 4 if procedural else 0,
+            "derivedFromSingleStillUnits": pose_report["derivedPoseCreatureCount"],
+            "fullIndependentlyIllustratedBuildings": town_art_report["illustratedIndependently"],
+            "townClippingRequiresReview": town_art_report["placementClippingCount"],
+            "vcmiGameplayVerified": False,
+        },
+        "townArtPipeline": {
+            "totalStructures": town_art_report["townStructures"],
+            "independentBuildingPaintings": town_art_report["sourcePaintings"],
+            "derivedStructureOverlays": town_art_report.get("reusedIllustrationDerivatives",0),
+            "layoutAndClickMasksRuntimeTested": False,
+        },
         "spritePosePipeline": {
             "creatures": pose_report["creatureCount"],
             "spriteSheets": pose_report["spriteSheetCount"],
@@ -409,6 +428,9 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         f"| Grouped sprite sheets | {pose_report['spriteSheetCount']} generated (unapproved animation) |",
         f"| VCMI mapped building overlays | {pose_report['paintedBuildingOverlays']} illustrated prototypes |",
         f"| Distinct AI-illustrated key poses | {pose_report['illustratedKeyPoseCount']} (4 creatures) |",
+        f"| Derived single-still pose studies | {pose_report['derivedPoseCount']} (10 creatures; NOT illustrated) |",
+        f"| Illustrated-source building derivatives | {town_art_report['townStructures']} structures from 8 source paintings |",
+        f"| Town overlays clipping canvas | {town_art_report['placementClippingCount']} (requires manual QA) |",
         f"| Artist-authored animation frames | {pose_report['overallAuthoredAnimationFrames']} |",
         "| Windows install smoke | Separate Windows Actions job; not gameplay |",
         "| Production-quality artwork | NOT DELIVERED |",
@@ -427,7 +449,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
                 z.write(p, p.relative_to(output))
         for p in (summary_path, output / "validation.json",
                   output / "missing-assets.json",
-                  output / "sprite-pose-report.json") if procedural else (
+                  output / "sprite-pose-report.json",
+                  output / "town-art-report.json") if procedural else (
                   summary_path, output / "validation.json",
                   output / "missing-assets.json"):
             z.write(p, p.relative_to(output))

@@ -120,6 +120,43 @@ def load_keypose_sources():
     return result
 
 
+def generate_derived_pose_studies(dest, build):
+    """Four distinct COMPUTED poses per remaining creature, not illustrated poses.
+
+    These 40 frames all derive from ten pre-existing painted single stills.
+    CI MUST NOT interpret them as illustrated or hand-authored frames.
+    """
+    results={}
+    names=[key for key in ALL_CREATURES if key not in KEYPOSE_MASTER]
+    review=Image.new('RGB',(920,90+len(names)*165),(22,17,36))
+    d=ImageDraw.Draw(review)
+    d.text((12,13),'DERIVED ACTION STUDIES: 10 UNITS / ONE SOURCE STILL EACH',fill=(234,212,250))
+    d.text((12,34),'NOT DISTINCT ILLUSTRATIONS | NOT ACCEPTABLE AS PRODUCTION ANIMATION',fill=(231,142,151))
+    for col,title in enumerate(KEYPOSE_ACTIONS):
+        d.text((165+175*col,55),title.upper(),fill=(204,166,234))
+    for row,key in enumerate(names):
+        filename=Path(dest)/('UD_'+key.upper()+'_FRAME0.png')
+        with Image.open(filename) as img:
+            source=fit(img,CANVAS,margin=18)
+        states={'idle':source,
+                'move':pose(source,key,'move',1,6),
+                'attack':pose(source,key,'cast' if key in MAGE else 'attack',2,6),
+                'hit':pose(source,key,'hit',2,5)}
+        digests={k:hashlib.sha256(im.tobytes()).hexdigest() for k,im in states.items()}
+        if len(set(digests.values()))!=4:
+            raise ValueError(f'Derived study lacks unique states: {key}')
+        results[key]={'poses':states,'sourceFile':filename.name,
+          'keyPoseChecksums':digests,
+          'origin':'PROCEDURALLY_DERIVED_FROM_ONE_PAINTED_STILL',
+          'runtimeApproved':False}
+        y=80+row*165
+        d.text((7,y+72),key,fill=(218,184,242))
+        for col,k in enumerate(KEYPOSE_ACTIONS):
+            review.paste(states[k],(160+col*175,y),states[k])
+    review.save(Path(build)/'DERIVED_POSE_REVIEW.png',optimize=True)
+    return results
+
+
 def render_keypose_action(poses, action, frame, count):
     """Timeline from illustrated keyposes plus generated in-betweens (not authored animation)."""
     idle=poses['idle']
@@ -254,7 +291,8 @@ def render_animation(source, key, dest, sheet_folder, keypose_data=None):
     base=fit(source,CANVAS,margin=18)
     sequences=[];hashes={};cache={};action_names=[];authored_count=0;authored_groups=[]
     group_map=groups_for(key)
-    illustrated_pose_count=len(keypose_data['poses']) if keypose_data else 0
+    illustrated_pose_count=(len(keypose_data['poses']) if keypose_data and keypose_data['origin']=='AI_GENERATED_DISTINCT_KEYPOSE_ILLUSTRATIONS' else 0)
+    derived_pose_count=(len(keypose_data['poses']) if keypose_data and keypose_data['origin']=='PROCEDURALLY_DERIVED_FROM_ONE_PAINTED_STILL' else 0)
     for group,(action,count) in sorted(group_map.items()):
         authored_dir=SRC/'authored-poses'/key/f'group-{group:02d}'
         artwork_files=sorted(authored_dir.glob('*.png')) if authored_dir.is_dir() else []
@@ -316,6 +354,7 @@ def render_animation(source, key, dest, sheet_folder, keypose_data=None):
             'poseMethod':'AUTHORED_SOURCE_OVERRIDE_PLUS_GENERATED_FALLBACK' if authored_count else 'PROCEDURAL_IMAGE_TRANSFORM_AND_EFFECTS',
             'source':'ILLUSTRATED_FOUR_KEYPOSE_ATLAS' if keypose_data else ('IMPROVED_ISOLATED_ART' if key in NEW_CREATURES else 'PAINTED_CONCEPT_ATLAS'),
             'illustratedKeyPoseCount':illustrated_pose_count,
+            'derivedKeyPoseCount':derived_pose_count,
             'illustratedKeyPoseHashes':keypose_data['keyPoseChecksums'] if keypose_data else {},
             'illustrationOrigin':keypose_data['origin'] if keypose_data else 'LEGACY_PAINTED_STILL',
             'illustratedKeyPoseApproved':False}
@@ -384,8 +423,10 @@ def generate_pose_sheets(generated_dir, build_dir):
     creature_atlas=atlases['creatures-master.webp']
     building_atlas=atlases['buildings-master.webp']
     built=[];sheets=[]
-    keypose_sources=load_keypose_sources()
-    source_keypose_preview(keypose_sources,build/"KEYPOSE_APPROVAL_SHEET.png")
+    illustrated_sources=load_keypose_sources()
+    source_keypose_preview(illustrated_sources,build/"KEYPOSE_APPROVAL_SHEET.png")
+    derived_sources=generate_derived_pose_studies(dest,build)
+    keypose_sources={**derived_sources,**illustrated_sources}
     for idx,key in enumerate(ALL_CREATURES):
         prefix='UD_'+key.upper()
         if key in NEW_CREATURES:
@@ -436,7 +477,9 @@ def generate_pose_sheets(generated_dir, build_dir):
             'creatureCount':len(built),'spriteSheetCount':len(built),
             'buildings':buildings,'paintedBuildingOverlays':len(buildings),
             'overallAuthoredAnimationFrames':sum(x['authoredActionFrames'] for x in built),
-            'illustratedKeyPoseCreatureCount':len(keypose_sources),
+            'illustratedKeyPoseCreatureCount':len(illustrated_sources),
+            'derivedPoseCreatureCount':len(derived_sources),
+            'derivedPoseCount':sum(unit['derivedKeyPoseCount'] for unit in built),
             'illustratedKeyPoseCount':sum(x['illustratedKeyPoseCount'] for x in built),
             'keyPoseMethod':'AI_ILLUSTRATED_KEYPOSES_WITH_GENERATED_INTERPOLATION_NOT_HAND_ANIMATED',
             'rangedMissile':projectile,
@@ -446,7 +489,7 @@ def generate_pose_sheets(generated_dir, build_dir):
                        'Fallback poses generated by geometric transforms/FX of stills; NOT frame-by-frame authored.',
                        'Animation groups technically present; actual in-game transitions unverified.',
                        '8 painted building image overlays provisional: town-screen alignment unverified.',
-                       'The 10 other creatures need original action-specific keyframes.']}
+                       'The ten other creatures now have derived pose studies, but original action-specific paintings are still missing.']}
     (build/'sprite-pose-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     return report
 

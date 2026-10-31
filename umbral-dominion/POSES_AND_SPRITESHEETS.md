@@ -42,3 +42,14 @@ Reference: https://vcmi.eu/modders/Animation_Format/ and https://vcmi.eu/modders
 - **Release remains blocked**: 10 creatures still have generated poses based on single painted stills; these four units lack fully illustrated action sequences; town-screen structures and gameplay remain untested.
 
 The Windows CI smoke test is **not** a gameplay or launch test. Full acceptance still requires a user-controlled PC with VCMI and legitimate Heroes III resources.
+
+## Milestone 0.4 — coverage reporting and town-placement audit
+
+- **14/14 creatures have action-state coverage**, but only four units have four distinct AI-illustrated key poses each (16 illustrated sources). The other **ten use 40 computer-derived poses**, four per unit, from their original single stills. They are **not** new illustrated artwork and **not** approved animation.
+- The reproducible `DERIVED_POSE_REVIEW.png` displays those ten rows and source-action transformations. The existing `KEYPOSE_APPROVAL_SHEET.png` continues to display the four AI-illustrated units.
+- All **36 Ebonspire town-structure overlays** now use deterministic derivatives of the **eight painted source buildings**; these are **not 36 independent building paintings**. The `TOWN_STRUCTURE_REVIEW.png` contact sheet identifies the derived source for each.
+- `TOWN_LAYOUT_DIAGNOSTIC.png` previews the configured x/y/z positions. `town-art-report.json` records placements extending past the town's 800×374 canvas. Overlaps and click masks are not verified by the game.
+- `qa/test_art_readiness.py` independently verifies art provenance, prevents source-count inflation, requires truthful release readiness, and audits every packaged structure PNG.
+- GitHub Actions continues to run separate Linux JSON/asset QA and a **Windows installation-only smoke test**. Neither proves gameplay.
+
+**Release remains BLOCKED.** Future work: 40 authentic source poses for the remaining ten, complete authored combat frames, uniquely illustrated towns, engine runtime testing.

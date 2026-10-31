@@ -52,6 +52,7 @@ jobs:
             "${ARGS[@]}"
           python umbral-dominion/qa/verify_package.py umbral-dominion/build
           python umbral-dominion/qa/test_sprite_pipeline.py umbral-dominion/build
+          python umbral-dominion/qa/test_art_readiness.py umbral-dominion/build
       - name: Publish validation summary
         if: always()
         shell: bash
@@ -76,6 +77,10 @@ jobs:
             umbral-dominion/build/artwork-concepts.json
             umbral-dominion/build/SPRITE_ACTION_PREVIEW.png
             umbral-dominion/build/KEYPOSE_APPROVAL_SHEET.png
+            umbral-dominion/build/DERIVED_POSE_REVIEW.png
+            umbral-dominion/build/TOWN_STRUCTURE_REVIEW.png
+            umbral-dominion/build/TOWN_LAYOUT_DIAGNOSTIC.png
+            umbral-dominion/build/town-art-report.json
             umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
             umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn
@@ -111,7 +116,9 @@ jobs:
             }
           }
           $meta = Get-Content -LiteralPath (Join-Path $mod 'mod.json') -Raw | ConvertFrom-Json
-          if ($meta.version -ne '0.3.0-alpha') { throw "Unexpected mod version: $($meta.version)" }
+          if ($meta.version -ne '0.4.0-alpha') { throw "Unexpected mod version: $($meta.version)" }
+          $overlays = @(Get-ChildItem -LiteralPath (Join-Path $mod 'Content/sprites') -Filter 'UD_TOWN_*_FRAME0.png')
+          if ($overlays.Count -lt 36) { throw "Expected 36 town overlay prototypes, found $($overlays.Count)" }
           & './umbral-dominion/scripts/install_windows.ps1' -Archive $archive -VcmiDataDir $dest
           $backups = @(Get-ChildItem -LiteralPath (Join-Path $dest 'Mods') -Directory |
              Where-Object { $_.Name -like 'umbralDominion-backup-*' })
