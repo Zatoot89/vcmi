@@ -26,4 +26,15 @@ Official docs: https://vcmi.eu/modders/Readme/
 
 ## Generated graphics and installing on Windows
 
-The build now generates original geometric/procedural PNG graphics and VCMI JSON animation descriptors plus a composed OGG theme. They are **placeholder art** for prototyping, not finished faction illustrations. An artifact preview `ASSET_PREVIEW.png` shows the generated look. See [WINDOWS_QA.md](WINDOWS_QA.md) for game tests, or install the draft with `scripts/install_windows.ps1` after downloading the CI ZIP. Runtime compatibility is still unverified.
+**Artwork is NOT finished.** All generated silhouettes, town backgrounds, UI graphics and animation loops are **temporary placeholders**. Their presence does not mean production art exists. The generator creates geometric PNGs and prototype VCMI JSON frame sequences with a composed OGG theme. They are not polished fantasy illustrations or genuine gameplay animations. An artifact preview `ASSET_PREVIEW.png` shows the generated look. See [WINDOWS_QA.md](WINDOWS_QA.md) for game tests, or install the draft with `scripts/install_windows.ps1` after downloading the CI ZIP. Runtime compatibility is still unverified.
+
+## Release status — BLOCKED
+
+- GitHub Actions green means **JSON structure and archive packaging pass only**.
+- The art generator creates **procedural placeholder imagery** rather than finished original illustrations.
+- The 14 creatures require **distinct approved visual designs and individually authored motion frames**; mirrored or slightly shifted still images do not count.
+- Eight heroes need finished portraits and specialities; Ebonspire needs a professionally illustrated town, buildings, town map and screens.
+- Gameplay on **Windows VCMI has not been tested**.
+- Running the generator with `--release` deliberately fails rather than shipping these placeholders as a completed faction.
+
+**Do not call this a completed playable mod.** The package is only an engineering prototype.

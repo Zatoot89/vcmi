@@ -210,7 +210,7 @@ def replace_custom_animation_refs(value):
         return value[:-4] + ".json"
     return value
 
-def build(schema_dir, output, require_art=False, procedural=True):
+def build(schema_dir, output, require_art=False, procedural=True, release=False):
     creatures_raw = load(DESIGNS / "creatures.json")
     heroes_raw = load(DESIGNS / "heroes.json")
     faction_design = load(DESIGNS / "faction-design.json")
@@ -317,6 +317,15 @@ def build(schema_dir, output, require_art=False, procedural=True):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
     missing = [a for a in assets if not a["provided"]]
+    placeholder_count = sum(a["prototype"] for a in assets)
+    # A present image file is not proof of production-quality sprite animation.
+    # Explicitly block any release from this prototype generator.
+    if release:
+        raise RuntimeError(
+            f"RELEASE BLOCKED: {placeholder_count} procedural placeholder references; "
+            "no VCMI Windows runtime QA evidence; final animations not verified. "
+            "The current pipeline only builds prototype artifacts."
+        )
     music_file = generate_music(mod) if procedural else None
     write(output / "missing-assets.json", missing)
     write(output / "validation.json", {
@@ -331,7 +340,12 @@ def build(schema_dir, output, require_art=False, procedural=True):
         "generatedAssetReferences": generated["covered"],
         "originalArtwork": False,
         "musicCreated": music_file is not None,
-        "visualPlaceholderCount": sum(a["prototype"] for a in assets),
+        "visualPlaceholderCount": placeholder_count,
+        "artworkQuality": "PLACEHOLDER_CONCEPT_ONLY" if placeholder_count else "UNVERIFIED_CUSTOM",
+        "animationQuality": "PROCEDURAL_STILL_FRAMES_NOT_PRODUCTION_ANIMATION",
+        "releaseReady": False,
+        "windowsQA": "NOT_TESTED",
+        "sourceImagesAreReleaseArt": False,
         "townBuildingCount": len(town["buildings"]),
         "townDwellingCount": sum(k.startswith("dwelling") for k in town["buildings"]),
         "playable": False,
@@ -355,6 +369,10 @@ def build(schema_dir, output, require_art=False, procedural=True):
         "| Ebonspire dwelling buildings | 14 configured |",
         f"| Artwork covered | {len(assets)-len(missing)} / {len(assets)} (procedural placeholders) |",
         f"| Original ambient music | {'YES' if music_file else 'NO'} |",
+        f"| Procedural placeholder references | {placeholder_count} |",
+        "| Production-quality artwork | NOT DELIVERED |",
+        "| Genuine animation frames | NOT DELIVERED |",
+        "| Production release | BLOCKED |",
         "| Playable Ebonspire town | NOT RUNTIME TESTED |",
         "| Prototype install smoke test | MANUAL WINDOWS QA REQUIRED |",
         "", "This is a DEVELOPMENT BUILD. Do not install it as a completed faction."
@@ -380,12 +398,14 @@ def main():
     parser.add_argument("--schemas", type=Path, default=PROJECT_ROOT / "config" / "schemas")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--strict-assets", action="store_true")
+    parser.add_argument("--release", action="store_true",
+                        help="Block releases until production art and Windows QA are implemented")
     parser.add_argument("--no-generated-art", action="store_true",
                         help="Require licensed user-supplied graphics instead of generated prototypes")
     args = parser.parse_args()
     try:
         build(args.schemas, args.out, args.strict_assets,
-              procedural=not args.no_generated_art)
+              procedural=not args.no_generated_art, release=args.release)
     except Exception as exc:
         print(f"BUILD FAILED: {exc}", file=sys.stderr)
         sys.exit(1)
