@@ -1,0 +1,52 @@
+{
+  "name": "Umbral Dominion",
+  "town": "Ebonspire",
+  "nativeTerrain": "subterranean",
+  "heroClasses": [
+    "Dreadlord",
+    "Voidcaller"
+  ],
+  "theme": "dark fantasy",
+  "playstyle": "debuffs and heavy melee",
+  "buildings": [
+    "Fort",
+    "Citadel",
+    "Castle",
+    "Tavern",
+    "Blacksmith",
+    "Marketplace",
+    "Mage Guild",
+    "Obsidian Reliquary",
+    "Well of Shadows"
+  ],
+  "tiers": {
+    "1": [
+      "Ashling",
+      "Cinder Imp"
+    ],
+    "2": [
+      "Gloom Hound",
+      "Dread Hound"
+    ],
+    "3": [
+      "Veil Archer",
+      "Nightstalker"
+    ],
+    "4": [
+      "Grave Sentinel",
+      "Doom Sentinel"
+    ],
+    "5": [
+      "Hexbinder",
+      "Soul Weaver"
+    ],
+    "6": [
+      "Dusk Reaver",
+      "Abyssal Reaver"
+    ],
+    "7": [
+      "Umbral Dragon",
+      "Eclipse Dragon"
+    ]
+  }
+}

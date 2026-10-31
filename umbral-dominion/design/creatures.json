@@ -1,0 +1,240 @@
+{
+  "ashling": {
+    "name": "Ashling",
+    "tier": 1,
+    "upgraded": false,
+    "role": "swarm",
+    "attack": 4,
+    "defense": 3,
+    "damage": {
+      "min": 1,
+      "max": 2
+    },
+    "hitPoints": 5,
+    "speed": 5,
+    "growth": 16,
+    "upgradeTo": "cinderImp",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "cinderImp": {
+    "name": "Cinder Imp",
+    "tier": 1,
+    "upgraded": true,
+    "role": "swarm",
+    "attack": 6,
+    "defense": 4,
+    "damage": {
+      "min": 2,
+      "max": 3
+    },
+    "hitPoints": 5,
+    "speed": 7,
+    "growth": 16,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "gloomHound": {
+    "name": "Gloom Hound",
+    "tier": 2,
+    "upgraded": false,
+    "role": "striker",
+    "attack": 7,
+    "defense": 5,
+    "damage": {
+      "min": 3,
+      "max": 5
+    },
+    "hitPoints": 16,
+    "speed": 7,
+    "growth": 9,
+    "upgradeTo": "dreadHound",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "dreadHound": {
+    "name": "Dread Hound",
+    "tier": 2,
+    "upgraded": true,
+    "role": "striker",
+    "attack": 8,
+    "defense": 6,
+    "damage": {
+      "min": 4,
+      "max": 6
+    },
+    "hitPoints": 18,
+    "speed": 8,
+    "growth": 9,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "veilArcher": {
+    "name": "Veil Archer",
+    "tier": 3,
+    "upgraded": false,
+    "role": "ranged",
+    "attack": 8,
+    "defense": 6,
+    "damage": {
+      "min": 4,
+      "max": 6
+    },
+    "hitPoints": 24,
+    "speed": 5,
+    "growth": 7,
+    "upgradeTo": "nightstalker",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "nightstalker": {
+    "name": "Nightstalker",
+    "tier": 3,
+    "upgraded": true,
+    "role": "ranged",
+    "attack": 9,
+    "defense": 7,
+    "damage": {
+      "min": 5,
+      "max": 7
+    },
+    "hitPoints": 26,
+    "speed": 6,
+    "growth": 7,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "graveSentinel": {
+    "name": "Grave Sentinel",
+    "tier": 4,
+    "upgraded": false,
+    "role": "tank",
+    "attack": 9,
+    "defense": 12,
+    "damage": {
+      "min": 6,
+      "max": 9
+    },
+    "hitPoints": 40,
+    "speed": 5,
+    "growth": 4,
+    "upgradeTo": "doomSentinel",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "doomSentinel": {
+    "name": "Doom Sentinel",
+    "tier": 4,
+    "upgraded": true,
+    "role": "tank",
+    "attack": 11,
+    "defense": 14,
+    "damage": {
+      "min": 7,
+      "max": 10
+    },
+    "hitPoints": 45,
+    "speed": 6,
+    "growth": 4,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "hexbinder": {
+    "name": "Hexbinder",
+    "tier": 5,
+    "upgraded": false,
+    "role": "caster",
+    "attack": 13,
+    "defense": 10,
+    "damage": {
+      "min": 10,
+      "max": 13
+    },
+    "hitPoints": 70,
+    "speed": 7,
+    "growth": 3,
+    "upgradeTo": "soulWeaver",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "soulWeaver": {
+    "name": "Soul Weaver",
+    "tier": 5,
+    "upgraded": true,
+    "role": "caster",
+    "attack": 14,
+    "defense": 11,
+    "damage": {
+      "min": 11,
+      "max": 15
+    },
+    "hitPoints": 75,
+    "speed": 8,
+    "growth": 3,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "duskReaver": {
+    "name": "Dusk Reaver",
+    "tier": 6,
+    "upgraded": false,
+    "role": "melee",
+    "attack": 17,
+    "defense": 14,
+    "damage": {
+      "min": 18,
+      "max": 23
+    },
+    "hitPoints": 125,
+    "speed": 8,
+    "growth": 2,
+    "upgradeTo": "abyssalReaver",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "abyssalReaver": {
+    "name": "Abyssal Reaver",
+    "tier": 6,
+    "upgraded": true,
+    "role": "melee",
+    "attack": 19,
+    "defense": 15,
+    "damage": {
+      "min": 20,
+      "max": 26
+    },
+    "hitPoints": 140,
+    "speed": 9,
+    "growth": 2,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "umbralDragon": {
+    "name": "Umbral Dragon",
+    "tier": 7,
+    "upgraded": false,
+    "role": "flyer",
+    "attack": 21,
+    "defense": 18,
+    "damage": {
+      "min": 35,
+      "max": 45
+    },
+    "hitPoints": 200,
+    "speed": 10,
+    "growth": 1,
+    "upgradeTo": "eclipseDragon",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "eclipseDragon": {
+    "name": "Eclipse Dragon",
+    "tier": 7,
+    "upgraded": true,
+    "role": "flyer",
+    "attack": 24,
+    "defense": 21,
+    "damage": {
+      "min": 40,
+      "max": 50
+    },
+    "hitPoints": 250,
+    "speed": 12,
+    "growth": 1,
+    "upgradeTo": null,
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  }
+}

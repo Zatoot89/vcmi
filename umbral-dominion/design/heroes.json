@@ -1,0 +1,50 @@
+{
+  "morvane": {
+    "name": "Morvane",
+    "class": "Dreadlord",
+    "specialtyConcept": "Shadow Command",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "kaedros": {
+    "name": "Kaedros",
+    "class": "Dreadlord",
+    "specialtyConcept": "Cursed Steel",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "tharok": {
+    "name": "Tharok",
+    "class": "Dreadlord",
+    "specialtyConcept": "Umbral Vanguard",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "elysVorn": {
+    "name": "Elys Vorn",
+    "class": "Dreadlord",
+    "specialtyConcept": "Warden of Night",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "seralyth": {
+    "name": "Seralyth",
+    "class": "Voidcaller",
+    "specialtyConcept": "Hex Mastery",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "veyra": {
+    "name": "Veyra",
+    "class": "Voidcaller",
+    "specialtyConcept": "Twilight Sorcery",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "malachar": {
+    "name": "Malachar",
+    "class": "Voidcaller",
+    "specialtyConcept": "Soul Binding",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  },
+  "nyxara": {
+    "name": "Nyxara",
+    "class": "Voidcaller",
+    "specialtyConcept": "Eclipse Magic",
+    "implementationStatus": "design only; NOT a VCMI schema object"
+  }
+}

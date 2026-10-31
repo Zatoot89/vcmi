@@ -1,0 +1,71 @@
+name: Umbral Dominion - Auto Build (Windows mod draft)
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "umbral-dominion/design/**"
+      - "umbral-dominion/scripts/**"
+      - "umbral-dominion/assets/**"
+      - ".github/workflows/umbral-dominion-autobuild.yml"
+  workflow_dispatch:
+    inputs:
+      strict_assets:
+        description: "Fail if any required art asset is absent"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: umbral-dominion-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-and-validate:
+    name: Generate JSON and development package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout VCMI fork
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install JSON Schema validator
+        run: python -m pip install "jsonschema>=4.20,<5"
+      - name: Generate faction draft and validate against this fork
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [[ "\${{ inputs.strict_assets || 'false' }}" == "true" ]]; then
+            ARGS+=(--strict-assets)
+          fi
+          python umbral-dominion/scripts/build_mod.py \
+            --schemas config/schemas \
+            "\${ARGS[@]}"
+      - name: Publish validation summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f umbral-dominion/build/BUILD_REPORT.md ]]; then
+            cat umbral-dominion/build/BUILD_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' 'Umbral Dominion generation failed; inspect build logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload development ZIP and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: umbral-dominion-windows-DRAFT
+          path: |
+            umbral-dominion/build/umbral-dominion-dev-DRAFT.zip
+            umbral-dominion/build/BUILD_REPORT.md
+            umbral-dominion/build/validation.json
+            umbral-dominion/build/missing-assets.json
+          if-no-files-found: warn
+          retention-days: 30
