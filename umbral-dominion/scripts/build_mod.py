@@ -177,7 +177,8 @@ def make_hero_classes():
 
 def validate_schemas(schema_dir, data):
     try:
-        from jsonschema import Draft4Validator
+        from jsonschema import Draft4Validator, RefResolver
+        import json5
     except ImportError as exc:
         raise RuntimeError("Install dependency with pip install jsonschema") from exc
     results = {}
@@ -185,8 +186,9 @@ def validate_schemas(schema_dir, data):
         path = schema_dir / schema_filename
         if not path.exists():
             raise FileNotFoundError(f"Required official VCMI schema is missing: {path}")
-        schema = load(path)
-        validator = Draft4Validator(schema)
+        schema = json5.loads(path.read_text(encoding="utf-8"))
+        resolver = RefResolver(base_uri=path.resolve().as_uri(), referrer=schema)
+        validator = Draft4Validator(schema, resolver=resolver)
         count = 0
         for key, value in obj.items():
             errors = sorted(validator.iter_errors(value), key=lambda e: str(e.path))
