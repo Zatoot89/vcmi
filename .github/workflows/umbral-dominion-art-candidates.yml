@@ -52,7 +52,7 @@ jobs:
             fi
             args+=(--generate --authorize-charges)
           fi
-          python umbral-dominion/scripts/generate_art_candidates.py ${args[@]}
+          python umbral-dominion/scripts/generate_art_candidates.py "${args[@]}"
           echo "No generated artwork is automatically merged or released." >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
