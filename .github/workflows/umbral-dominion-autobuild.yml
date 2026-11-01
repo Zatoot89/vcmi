@@ -54,6 +54,7 @@ jobs:
           python umbral-dominion/qa/verify_package.py umbral-dominion/build
           python umbral-dominion/qa/test_sprite_pipeline.py umbral-dominion/build
           python umbral-dominion/qa/test_art_readiness.py umbral-dominion/build
+          python umbral-dominion/qa/test_art_candidate_gate.py
           python umbral-dominion/qa/town_occlusion.py umbral-dominion/build
           python umbral-dominion/scripts/prepare_art_briefs.py
       - name: Publish validation summary
