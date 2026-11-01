@@ -77,3 +77,11 @@ For each row use columns **idle, move, attack (or cast), hit**. Draw distinct ch
 When a valid atlas is committed, the same workflow **automatically** replaces the single-still derived group frames, checks all four poses for uniqueness, updates `KEYPOSE_APPROVAL_SHEET.png`, shrinks `ARTWORK_BACKLOG.json`, and updates the creature source-quality counters. No Python edits are required for each asset.
 
 These 4 poses per unit are **key-pose studies, not full finished combat animation**. Death, turn, attacks, gameplay bounds and all rendered transitions still require review.
+
+## v0.5 review triage and art-production automation
+
+The `qa/town_occlusion.py` stage now computes pixel-level alpha intersections for the existing 54 rectangular overlaps, classifying them as **upgrade-chain variants**, **related attachments**, or **independent review candidates**. Its reports `TOWN_OCCLUSION_AUDIT.json` and `TOWN_OCCLUSION_REVIEW.md` separate likely intentional building relationships from locations that need visual review. Do **not** interpret any overlap counts as a game-render PASS. A strict CI guard prevents introducing more than the current 19 independent AABB overlaps without an explicit review.
+
+`scripts/prepare_art_briefs.py` automatically creates five character-pair source-art briefs from the backlog, with 2x4 transparent atlas requirements, artwork consistency, upgraded-unit differences and action-pose constraints. They are uploaded as workflow artifacts under `art-briefs/`. This prepares the *art intake workflow* but **does not automatically produce original painted artwork**, use a secret, or incur paid image API charges. The missing ten creatures still require 40 actual separately illustrated source poses.
+
+The current mod version remains **0.5.0-alpha**. Game-run testing on a real Windows VCMI installation with legitimate Heroes III assets remains outstanding.

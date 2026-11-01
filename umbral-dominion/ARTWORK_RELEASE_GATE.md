@@ -41,3 +41,9 @@ The `assets-source/` folder contains original AI-painted concept atlases, and `a
 - A distinct `qa/test_art_readiness.py` file verifies provenance and prevents a successful packaging build from falsely claiming complete artwork.
 - Latest full Linux + Windows installation smoke PASS: [run #41240677938](https://github.com/Zatoot89/vcmi/actions/runs/41240677938).
 - **Production release: BLOCKED.** Windows installation QA is not game-runtime QA.
+
+## v0.5 town occlusion and illustration backlog evidence
+
+The new town QA separately flags 54 rectangle overlaps as upgrade chains, related structure attachments or independent cases requiring visual review; only alpha-pixel intersections are used to prioritize—not to approve—those cases. The source artwork production briefs for the ten unfinished creatures are automatically emitted as `ART_GENERATION_BRIEFS.json` and `art-briefs/*.json` on each build. Their existence **does not mean** the illustrations are complete.
+
+The automated pipeline must not mark gameplay, artistic animation or fully independent building artwork as passed solely because ZIP, schema, and Windows installer smoke tests pass.

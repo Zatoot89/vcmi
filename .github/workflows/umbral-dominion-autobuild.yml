@@ -53,6 +53,8 @@ jobs:
           python umbral-dominion/qa/verify_package.py umbral-dominion/build
           python umbral-dominion/qa/test_sprite_pipeline.py umbral-dominion/build
           python umbral-dominion/qa/test_art_readiness.py umbral-dominion/build
+          python umbral-dominion/qa/town_occlusion.py umbral-dominion/build
+          python umbral-dominion/scripts/prepare_art_briefs.py
       - name: Publish validation summary
         if: always()
         shell: bash
@@ -83,6 +85,10 @@ jobs:
             umbral-dominion/build/TOWN_LAYOUT_BEFORE_AFTER.png
             umbral-dominion/build/town-art-report.json
             umbral-dominion/build/ARTWORK_BACKLOG.json
+            umbral-dominion/build/TOWN_OCCLUSION_AUDIT.json
+            umbral-dominion/build/TOWN_OCCLUSION_REVIEW.md
+            umbral-dominion/build/ART_GENERATION_BRIEFS.json
+            umbral-dominion/build/art-briefs/*.json
             umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
             umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn
