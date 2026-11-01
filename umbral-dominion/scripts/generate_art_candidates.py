@@ -94,7 +94,7 @@ def inspect_candidate(path, output, pair):
                   (col+1)*WIDTH//COLUMNS,(row+1)*HEIGHT//ROWS)
             cell=padded.crop(bounds)
             alpha=cell.getchannel('A')
-            occupied=sum(1 for x in alpha.getdata() if x>=100)
+            occupied=sum(1 for x in alpha.tobytes() if x>=100)
             silhouette=normalized_silhouette(cell)
             signatures.append(silhouette)
             report['cells'].append({'row':row,'col':col,'visibleAlphaPixels':occupied,
