@@ -73,3 +73,9 @@ All thirty-six town structure graphics have painted-source derivatives from **ei
 Automated QA run [#41240677938](https://github.com/Zatoot89/vcmi/actions/runs/41240677938) passed JSON, source-art provenance, sprite sheets, archive integrity, and isolated Windows ZIP installation/reinstallation checks. **Actual VCMI gameplay, town placement, clickable regions, creature recruitment, attacks and deaths are not runtime verified.** The release gate remains blocked.
 
 The Windows development artifact includes `DERIVED_POSE_REVIEW.png`, `TOWN_STRUCTURE_REVIEW.png`, `TOWN_LAYOUT_DIAGNOSTIC.png`, `town-art-report.json`, and `sprite-pose-report.json` for inspection.
+
+## Current v0.5 art production automation (November 2026)
+
+A new [manual original-art candidate workflow](../../actions/workflows/umbral-dominion-art-candidates.yml) produces **only a free brief by default**, or optionally makes **one** Google image API request after explicit payment acknowledgment and a configured `GEMINI_API_KEY` Actions secret. It saves unapproved art to an artifact and **never merges or releases it automatically**. See [ART_GENERATION_AUTOMATION.md](ART_GENERATION_AUTOMATION.md). The no-cost regression test rejects opaque posters and recolored duplicate poses. Verified locally with positive and negative fixtures; the new workflow's GitHub Actions run has **not yet been observed**.
+
+**Art completion remains unchanged:** 16 separately illustrated source poses across 4 creatures, 40 missing illustrations across the other 10, no complete authored combat sequences, and no VCMI gameplay test. The last verified green Linux + Windows Actions run is [#41244873002](https://github.com/Zatoot89/vcmi/actions/runs/41244873002), which predates the latest art-generation workflow additions.
