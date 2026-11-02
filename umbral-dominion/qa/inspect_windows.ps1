@@ -5,7 +5,8 @@ param(
   [string] $VcmiDataDir = "$env:USERPROFILE\Documents\My Games\vcmi",
   [string] $ReportDir = "$env:USERPROFILE\Desktop\UmbralDominion-QA",
   [string] $GameExecutable = "",
-  [switch] $LaunchGame
+  [switch] $LaunchGame,
+  [switch] $SkipGameDetection
 )
 $ErrorActionPreference = "Stop"
 $tests = New-Object 'System.Collections.Generic.List[object]'
@@ -57,7 +58,11 @@ if ($GameExecutable) {
   $cmd=Get-Command 'vcmi_client.exe' -ErrorAction SilentlyContinue
   if ($cmd) { $GameExecutable=$cmd.Source; $gameFound=$true }
 }
-Check 'VCMI executable detected' $gameFound $(if($gameFound){$GameExecutable}else{'Not supplied; use -GameExecutable PATH'})
+if ($SkipGameDetection) {
+  $tests.Add([pscustomobject]@{test='VCMI executable';status='SKIP';detail='No game data on GitHub-hosted runner'})
+} else {
+  Check 'VCMI executable detected' $gameFound $(if($gameFound){$GameExecutable}else{'Not supplied; use -GameExecutable PATH'})
+}
 $ranGame=$false
 if ($LaunchGame) {
   if (-not $gameFound) {throw '-LaunchGame requires a valid -GameExecutable path'}
@@ -77,6 +82,7 @@ $report=[ordered]@{
     testCount=$tests.Count
     passed=@($tests|Where-Object status -eq PASS).Count
     failed=@($tests|Where-Object status -eq FAIL).Count
+    skipped=@($tests|Where-Object status -eq SKIP).Count
     tests=@($tests.ToArray())
     requiredGameplayEvidence=@('VCMI version','launcher screenshot with enabled mod','town screenshot',
       'tavern hero recruitment','all 7 dwelling upgrades','combat attacks, deaths and projectiles',

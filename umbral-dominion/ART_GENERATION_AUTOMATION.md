@@ -26,3 +26,13 @@ The main build's `compile_sprites.py` ingests these filenames automatically when
 - Existing [main automated build](https://github.com/Zatoot89/vcmi/actions/workflows/umbral-dominion-autobuild.yml) can be manually dispatched on `develop`; the GitHub connection currently does not provide a direct workflow-dispatch operation.
 
 Reference: [Google Gemini official image-generation guide](https://ai.google.dev/gemini-api/docs/generate-content/image-generation).
+
+## Windows evidence from your own VCMI installation
+
+The repository now includes `qa/inspect_windows.ps1`. On your PC after installing the alpha ZIP, use PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\umbral-dominion\qa\inspect_windows.ps1 -GameExecutable "C:\Path\To\vcmi_client.exe"
+```
+
+It checks the 14 creature configs, 14 animation descriptors, 72 generated sound clips, 36 town structures and overlays, and the town OGG, then writes `Desktop\UmbralDominion-QA\umbral-windows-inspection.json`. With `-LaunchGame`, it opens VCMI (you must inspect gameplay manually). **Neither script launch nor ZIP checks can mark in-game recruitment/combat PASS**; actual game screenshots/logs are still required.

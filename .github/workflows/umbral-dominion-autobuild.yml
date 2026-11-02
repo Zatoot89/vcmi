@@ -141,5 +141,7 @@ jobs:
           $backups = @(Get-ChildItem -LiteralPath (Join-Path $dest 'Mods') -Directory |
              Where-Object { $_.Name -like 'umbralDominion-backup-*' })
           if ($backups.Count -ne 1) { throw "Installer backup smoke failed: $($backups.Count)" }
+          & './umbral-dominion/qa/inspect_windows.ps1' -VcmiDataDir $dest -ReportDir (Join-Path $env:RUNNER_TEMP 'umbral-qa-evidence') -SkipGameDetection
+          if ($LASTEXITCODE -ne 0) { throw 'Windows installed content audit failed' }
           'PASS: Windows ZIP extraction, mod layout, projectile, archive install and upgrade backup. GAMEPLAY NOT TESTED.' |
             Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
