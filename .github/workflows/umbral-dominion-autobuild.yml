@@ -10,6 +10,10 @@ on:
       - "umbral-dominion/assets-source/**"
       - "umbral-dominion/qa/**"
       - ".github/workflows/umbral-dominion-autobuild.yml"
+  schedule:
+    # Backstop for API-token commits that do not emit Actions push events.
+    # Weekly, not daily: minimizes CI runner usage.
+    - cron: "17 3 * * 2"
   workflow_dispatch:
     inputs:
       strict_assets:
@@ -75,6 +79,7 @@ jobs:
             umbral-dominion/build/umbral-dominion-dev-DRAFT.zip
             umbral-dominion/build/BUILD_REPORT.md
             umbral-dominion/build/validation.json
+            umbral-dominion/build/creature-audio-report.json
             umbral-dominion/build/missing-assets.json
             umbral-dominion/build/ASSET_PREVIEW.png
             umbral-dominion/build/ARTWORK_PREVIEW.png
@@ -120,7 +125,8 @@ jobs:
           foreach ($path in @('mod.json','Content/config/creatures.json',
              'Content/config/faction.json','Content/sprites/UD_VEILARCHER.json',
              'Content/sprites/UD_NIGHTSTALKER.json',
-             'Content/sprites/UD_VOID_ARROW.json','Content/Music/UD_EBON_SPIRE.ogg')) {
+             'Content/sprites/UD_VOID_ARROW.json','Content/Music/UD_EBON_SPIRE.ogg',
+             'Content/sounds/UD_ASHLING_ATTACK.wav','Content/sounds/UD_ECLIPSEDRAGON_KILLED.wav')) {
             if (-not (Test-Path -LiteralPath (Join-Path $mod $path))) {
               throw "Missing installed mod asset $path"
             }

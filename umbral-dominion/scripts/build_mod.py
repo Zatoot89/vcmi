@@ -11,6 +11,7 @@ import sys
 import zipfile
 from collections import Counter
 from art_pipeline import generate_assets, generate_music, make_preview
+from creature_sfx import soundtrack_names, generate_creature_sfx
 from apply_concept_art import apply_painted_concepts
 from compile_sprites import generate_pose_sheets
 from town_visuals import build_town_visuals
@@ -273,6 +274,11 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "heroes": ["config/heroes.json"],
     }
     creatures = replace_custom_animation_refs(creatures)
+    if procedural:
+        # Use VCMI-supported original sound files, no borrowed HoMM3 samples.
+        sound_paths = soundtrack_names(creatures)
+        for creature_key, sounds in sound_paths.items():
+            creatures[creature_key]["sound"] = sounds
     heroes = replace_custom_animation_refs(heroes)
     classes = replace_custom_animation_refs(classes)
     faction = replace_custom_animation_refs(faction)
@@ -288,6 +294,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         shutil.rmtree(mod)
     config = mod / "Content" / "config"
     write(mod / "mod.json", manifest)
+    sfx_report = generate_creature_sfx(mod, creatures, output) if procedural else {"soundEffects": 0}
     write(config / "creatures.json", creatures)
     write(config / "heroes.json", heroes)
     write(config / "heroClasses.json", classes)
@@ -362,6 +369,8 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "generatedAssetReferences": generated["covered"],
         "originalArtwork": False,
         "musicCreated": music_file is not None,
+        "originalCreatureSfxCount": sfx_report["soundEffects"],
+        "sfxProductionReady": False,
         "visualPlaceholderCount": placeholder_count,
         "paintedConceptArt": painted_concepts,
         "artReadiness": {
@@ -423,6 +432,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
         "| Ebonspire dwelling buildings | 14 configured |",
         f"| Artwork covered | {len(assets)-len(missing)} / {len(assets)} (procedural placeholders) |",
         f"| Original ambient music | {'YES' if music_file else 'NO'} |",
+        f"| Original synthesized creature SFX | {sfx_report['soundEffects']} (prototype audio) |",
         f"| Procedural placeholder references | {placeholder_count} |",
         f"| Painted creature concept stills | {painted_concepts['creatures']} (NOT final roster art) |",
         f"| Painted hero portrait concepts | {painted_concepts['heroes']} |",
@@ -459,6 +469,7 @@ def build(schema_dir, output, require_art=False, procedural=True, release=False)
                   output / "sprite-pose-report.json",
                   output / "town-art-report.json",
                   output / "ARTWORK_BACKLOG.json",
+                  output / "creature-audio-report.json",
                   output / "town-layout-corrections.json") if procedural else (
                   summary_path, output / "validation.json",
                   output / "missing-assets.json"):

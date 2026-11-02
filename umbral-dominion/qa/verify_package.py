@@ -2,6 +2,8 @@
 """Artifact static smoke tests. Does NOT execute a game or claim gameplay PASS."""
 import io
 import json
+import wave
+import hashlib
 import sys
 import zipfile
 from pathlib import Path
@@ -14,6 +16,8 @@ assert report["validatedEntities"]["heroes"]==8
 assert report["townDwellingCount"]==14
 assert report["missingArtCount"]==0,"Some artwork references are unresolved"
 assert report["musicCreated"],"No original generated theme"
+assert report["originalCreatureSfxCount"]==72,"Expected original 72 prototype creature SFX"
+assert report["sfxProductionReady"] is False
 archive=build/"umbral-dominion-dev-DRAFT.zip"
 with zipfile.ZipFile(archive) as z:
     names=set(z.namelist())
@@ -38,6 +42,27 @@ with zipfile.ZipFile(archive) as z:
     assert image_count>=250,f"Only {image_count} PNG files present"
     for item in configs:
         assert json.loads(z.read(item)),"Empty JSON config: "+item
+    sound_root=root+"Content/sounds/"
+    actual_sounds={n for n in names if n.startswith(sound_root) and n.lower().endswith(".wav")}
+    creature_cfg=json.loads(z.read(root+"Content/config/creatures.json"))
+    assert len(creature_cfg)==14
+    configured=[]
+    for key,creature in creature_cfg.items():
+        sounds=creature["sound"]
+        expected={"attack","defend","killed","move","wince"}
+        if key in ("veilArcher","nightstalker"):expected.add("shoot")
+        assert set(sounds)==expected, (key,sounds)
+        for event,f in sounds.items():
+            assert sound_root+f in actual_sounds,(key,event,f)
+            configured.append(sound_root+f)
+    assert len(set(configured))==72 and len(actual_sounds)==72
+    for path in configured:
+        with wave.open(io.BytesIO(z.read(path)),"rb") as wav:
+            assert wav.getnchannels()==1
+            assert wav.getsampwidth()==2
+            assert wav.getframerate()==22050
+            assert wav.getnframes()>2000
+    print("PASS original prototype creature audio: 14 units, 72 valid distinct PCM WAV effects")
     art=report["paintedConceptArt"]
     assert art["creatures"]==14 and art["heroes"]==8 and art["townScenes"]==1
     assert not report["releaseReady"] and art["genuineAnimationSequences"]==0

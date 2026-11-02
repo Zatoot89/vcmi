@@ -47,3 +47,7 @@ The `assets-source/` folder contains original AI-painted concept atlases, and `a
 The new town QA separately flags 54 rectangle overlaps as upgrade chains, related structure attachments or independent cases requiring visual review; only alpha-pixel intersections are used to prioritize—not to approve—those cases. The source artwork production briefs for the ten unfinished creatures are automatically emitted as `ART_GENERATION_BRIEFS.json` and `art-briefs/*.json` on each build. Their existence **does not mean** the illustrations are complete.
 
 The automated pipeline must not mark gameplay, artistic animation or fully independent building artwork as passed solely because ZIP, schema, and Windows installer smoke tests pass.
+
+## Creature sounds (prototype)
+
+72 original synthesized PCM WAV clips are generated, mapped to creature attack/defend/killed/move/wince/shoot events, and statically tested. SFX gameplay mix/playback is **not verified**. These are not finished sampled/followed sound effects. Studio or human-reviewed sound polish remains outstanding.
