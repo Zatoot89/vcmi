@@ -51,3 +51,7 @@ The automated pipeline must not mark gameplay, artistic animation or fully indep
 ## Creature sounds (prototype)
 
 72 original synthesized PCM WAV clips are generated, mapped to creature attack/defend/killed/move/wince/shoot events, and statically tested. SFX gameplay mix/playback is **not verified**. These are not finished sampled/followed sound effects. Studio or human-reviewed sound polish remains outstanding.
+
+## Strict file-reference gate (v0.5)
+
+`qa/test_resource_resolution.py` now loads the packaged VCMI JSON files and resolves every `UD_` / `UDPUZ` PNG/JSON/WAV reference against the real ZIP entries. It fails for missing source images, projectiles or sound files. The report `resource-resolution.json` records the evidence. This **does not** prove that VCMI can launch or that the visual data is correct in the game.

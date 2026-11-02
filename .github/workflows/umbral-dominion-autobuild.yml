@@ -56,6 +56,7 @@ jobs:
             --schemas config/schemas \
             "${ARGS[@]}"
           python umbral-dominion/qa/verify_package.py umbral-dominion/build
+          python umbral-dominion/qa/test_resource_resolution.py umbral-dominion/build
           python umbral-dominion/qa/test_sprite_pipeline.py umbral-dominion/build
           python umbral-dominion/qa/test_art_readiness.py umbral-dominion/build
           python umbral-dominion/qa/test_art_candidate_gate.py
@@ -80,6 +81,7 @@ jobs:
             umbral-dominion/build/BUILD_REPORT.md
             umbral-dominion/build/validation.json
             umbral-dominion/build/creature-audio-report.json
+            umbral-dominion/build/resource-resolution.json
             umbral-dominion/build/missing-assets.json
             umbral-dominion/build/ASSET_PREVIEW.png
             umbral-dominion/build/ARTWORK_PREVIEW.png
