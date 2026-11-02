@@ -63,6 +63,17 @@ jobs:
               action=`Started build for untested develop ${head.substring(0,12)}`;
               core.info(action);
             }
+            // Artifact inventory is read-only. Never silently delete old user builds.
+            const artifacts=await github.paginate(github.rest.actions.listArtifactsForRepo,{owner,repo,per_page:100});
+            const live=artifacts.filter(a=>!a.expired);
+            const totalBytes=live.reduce((s,a)=>s+a.size_in_bytes,0);
+            const gib=(totalBytes/1073741824).toFixed(2);
+            core.info(`Stored artifacts: ${live.length}, ${gib} GiB (repository-only, not billing balance)`);
+            const top=live.sort((a,b)=>b.size_in_bytes-a.size_in_bytes).slice(0,6);
+            for(const item of top) core.info(`Large artifact ${item.id} ${item.name}: ${(item.size_in_bytes/1048576).toFixed(1)} MiB`);
+            await core.summary.addHeading("Artifact storage audit (non-destructive)")
+              .addRaw(`Current unexpired artifacts: ${live.length}; ${gib} GiB. This is NOT the account-wide billing total. Old artifacts remain unchanged.`)
+              .write();
             await core.summary.addHeading("Umbral Dominion CI watchdog")
               .addRaw(`Develop: ${head}\n\n${action}\n\nNormal cancel: ${requested}, force-cancel: ${forced}, API errors: ${failed}.`)
               .write();

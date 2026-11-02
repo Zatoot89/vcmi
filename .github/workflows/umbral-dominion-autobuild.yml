@@ -10,10 +10,6 @@ on:
       - "umbral-dominion/assets-source/**"
       - "umbral-dominion/qa/**"
       - ".github/workflows/umbral-dominion-autobuild.yml"
-  schedule:
-    # Backstop for API-token commits that do not emit Actions push events.
-    # Weekly, not daily: minimizes CI runner usage.
-    - cron: "17 3 * * 2"
   workflow_dispatch:
     inputs:
       strict_assets:
@@ -63,7 +59,7 @@ jobs:
           python umbral-dominion/qa/town_occlusion.py umbral-dominion/build
           python umbral-dominion/scripts/prepare_art_briefs.py
       - name: Publish validation summary
-        if: always()
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           if [[ -f umbral-dominion/build/BUILD_REPORT.md ]]; then
@@ -72,7 +68,7 @@ jobs:
             printf '%s\n' 'Umbral Dominion generation failed; inspect build logs.' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Upload development ZIP and reports
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: umbral-dominion-windows-DRAFT
@@ -101,7 +97,7 @@ jobs:
             umbral-dominion/build/SPRITE_MOTION_PREVIEW.gif
             umbral-dominion/build/sprite-pose-report.json
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 7
 
   windows-install-smoke:
     name: Windows ZIP and installer smoke test (no game data)
