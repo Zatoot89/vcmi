@@ -8,8 +8,7 @@ on:
       - develop
     paths-ignore:
       - 'umbral-dominion/**'
-      - '.github/workflows/umbral-dominion*.yml'
-      - '.github/workflows/github.yml' # workflow edits are tested via workflow_dispatch
+      - '.github/workflows/**' # workflow-only changes must not launch VCMI full-platform builds
   pull_request:
   workflow_dispatch:
     inputs:
