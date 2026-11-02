@@ -1,0 +1,68 @@
+name: Umbral Dominion - Build Watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "13,43 * * * *"
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: umbral-dominion-watchdog
+  cancel-in-progress: true
+
+jobs:
+  recover-or-cancel:
+    runs-on: ubuntu-slim
+    timeout-minutes: 7
+    steps:
+      - name: Inspect newest code and rebuild if needed; close stale runs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const {owner,repo}=context.repo;
+            const target="umbral-dominion-autobuild.yml";
+            const head=(await github.rest.repos.getBranch({owner,repo,branch:"develop"})).data.commit.sha;
+            const output=await github.paginate(github.rest.actions.listWorkflowRuns,{owner,repo,workflow_id:target,per_page:100});
+            const active=new Set(["queued","in_progress","waiting","pending","requested"]);
+            const now=Date.now();
+            let requested=0,forced=0,failed=0;
+            let staleHeadActive=false;
+            for(const run of output){
+              if(!active.has(run.status))continue;
+              const age=(now-Date.parse(run.created_at))/60000;
+              if(age < 30)continue;
+              if(run.head_sha===head)staleHeadActive=true;
+              try {
+                if(age>=55){
+                  await github.request("POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel",{owner,repo,run_id:run.id});
+                  forced++;
+                  core.warning(`Force cancellation requested for stale run ${run.id} (${Math.round(age)} minutes)`);
+                }else{
+                  await github.rest.actions.cancelWorkflowRun({owner,repo,run_id:run.id});
+                  requested++;
+                  core.info(`Cancellation requested for run ${run.id} (${Math.round(age)} minutes)`);
+                }
+              }catch(e){failed++;core.warning(`Cancellation of ${run.id} failed: ${e.message}`);}
+            }
+            const same=output.filter(r=>r.head_sha===head);
+            const activeCurrent=same.some(r=>active.has(r.status));
+            const completedCurrent=same.filter(r=>r.status==="completed");
+            let action="no-op";
+            if(activeCurrent || staleHeadActive) action="Current HEAD has active or cancelling run";
+            else if(completedCurrent.length){
+              action=`Current HEAD already attempted: ${completedCurrent[0].conclusion}`;
+              if(completedCurrent[0].conclusion!=="success")
+                core.warning("Latest commit failed or was cancelled; prevent an endless retry loop. Fix source or run manually.");
+            }else {
+              // Dispatch once for untested HEAD, never from a repeated failed build.
+              await github.rest.actions.createWorkflowDispatch({owner,repo,workflow_id:target,ref:"develop",inputs:{strict_assets:"false"}});
+              action=`Started build for untested develop ${head.substring(0,12)}`;
+              core.info(action);
+            }
+            await core.summary.addHeading("Umbral Dominion CI watchdog")
+              .addRaw(`Develop: ${head}\n\n${action}\n\nNormal cancel: ${requested}, force-cancel: ${forced}, API errors: ${failed}.`)
+              .write();
