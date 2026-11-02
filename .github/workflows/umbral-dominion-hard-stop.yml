@@ -1,0 +1,34 @@
+name: Umbral Dominion - Cancel Unneeded Engine Runs
+on:
+  push:
+    branches: [develop]
+    paths: ['.github/workflows/umbral-dominion-hard-stop.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel-engine:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Request cancellation without waiting on engine concurrency
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const {owner,repo}=context.repo;
+            const all=await github.paginate(github.rest.actions.listWorkflowRunsForRepo,{owner,repo,per_page:100});
+            const active=new Set(['queued','in_progress','waiting','pending','requested']);
+            let count=0;
+            for(const r of all){
+              if(r.name!=='Daily Builds and Tests'||r.head_branch!=='develop'||!active.has(r.status)) continue;
+              try{
+                await github.rest.actions.cancelWorkflowRun({owner,repo,run_id:r.id});
+                count++;
+                core.info('Cancel requested for unneeded full VCMI run #'+r.id);
+              }catch(e){core.warning('Cancel for '+r.id+': '+e.message);}
+            }
+            await core.summary.addHeading('Cancel obsolete VCMI full-engine CI')
+              .addRaw('Cancellation requests sent: '+count+
+                '. Development alpha build has already passed; no new full engine build requested.').write();
