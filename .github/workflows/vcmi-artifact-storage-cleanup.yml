@@ -1,0 +1,73 @@
+name: VCMI - Artifact Storage Audit and Opt-in Cleanup
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Audit only by default; deletion requires exact confirmation
+        type: choice
+        required: true
+        default: audit_only
+        options:
+          - audit_only
+          - delete_old_engine_artifacts
+          - delete_old_engine_and_obsolete_umbral_drafts
+      confirmation:
+        description: For deletion type DELETE_OLD_VCMI_ARTIFACTS
+        type: string
+        required: false
+        default: ''
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: vcmi-artifact-maintenance
+  cancel-in-progress: false
+jobs:
+  audit-or-clean:
+    runs-on: ubuntu-slim
+    timeout-minutes: 12
+    steps:
+      - name: Audit existing artifacts and optionally delete older ones
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const {owner,repo}=context.repo;
+            const operation=context.payload.inputs?.action || 'audit_only';
+            const phrase=context.payload.inputs?.confirmation || '';
+            if(operation!=='audit_only' && phrase!=='DELETE_OLD_VCMI_ARTIFACTS')
+              throw new Error('Destructive deletion requires the exact confirmation phrase.');
+            const artifacts=await github.paginate(github.rest.actions.listArtifactsForRepo,{owner,repo,per_page:100});
+            const runs=await github.paginate(github.rest.actions.listWorkflowRunsForRepo,{owner,repo,per_page:100});
+            const engineIds=new Set(runs.filter(r=>r.name==='Daily Builds and Tests').map(r=>r.id));
+            const modRuns=runs.filter(r=>r.name==='Umbral Dominion - Auto Build (Windows mod draft)' && r.conclusion==='success');
+            const latestMod=modRuns.length ? modRuns.sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))[0].id : null;
+            const targets=[];
+            for(const item of artifacts){
+              if(item.expired)continue;
+              const origin=item.workflow_run?.id;
+              const engine=engineIds.has(origin);
+              const olderDraft=modRuns.some(run=>run.id===origin) && origin!==latestMod;
+              let candidate=false;
+              if(operation==='delete_old_engine_artifacts')candidate=engine;
+              if(operation==='delete_old_engine_and_obsolete_umbral_drafts')candidate=engine||olderDraft;
+              if(candidate)targets.push(item);
+            }
+            const total=artifacts.filter(a=>!a.expired).reduce((n,a)=>n+a.size_in_bytes,0);
+            const recoverable=targets.reduce((n,a)=>n+a.size_in_bytes,0);
+            core.info('Stored repository artifacts: '+(total/1073741824).toFixed(2)+' GiB');
+            core.info('Eligible for selected cleanup: '+targets.length+' artifacts / '+(recoverable/1073741824).toFixed(2)+' GiB');
+            let deleted=0,errors=0;
+            if(operation!=='audit_only'){
+              for(const item of targets){
+                try{
+                  await github.rest.actions.deleteArtifact({owner,repo,artifact_id:item.id});
+                  deleted++;
+                  core.info('DELETED artifact '+item.id+': '+item.name);
+                }catch(e){errors++;core.warning('Failed to delete artifact '+item.id+': '+e.message);}
+              }
+            }
+            await core.summary.addHeading('VCMI Actions artifact storage')
+              .addRaw('Mode: '+operation+'\n\nStored repository artifacts: '+(total/1073741824).toFixed(2)+' GiB.\n\nSelected: '+targets.length+' artifacts, '+(recoverable/1073741824).toFixed(2)+' GiB.\n\nDeleted: '+deleted+'; API errors: '+errors+'.\n\nLatest successful Umbral build retained: '+(latestMod||'none')+'.')
+              .write();
+            if(errors)core.setFailed('Unable to delete '+errors+' selected artifacts.');
